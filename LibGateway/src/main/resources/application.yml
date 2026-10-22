@@ -58,7 +58,7 @@ spring:
             - name: CircuitBreaker
               args:
                 name: loanService
-                fallbackUri: forward:/fallback/loans
+                fallbackUri: forward:/fallback/lendings
             - StripPrefix=0
 
         # ============================================
