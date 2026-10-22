@@ -3,7 +3,7 @@
 # Ingress only has to get traffic as far as the gateway.
 #
 # No host is set, so it matches whatever hostname arrives. The browser's origin
-# must still be listed in CORS_ALLOWED_ORIGINS (k8s/config.env).
+# must also match CORS_ALLOWED_ORIGINS (k8s/config.env), which defaults to "*".
 #
 # k3s ships Traefik as its ingress controller, not ingress-nginx.
 # k8s/k3s/traefik-config.yaml moves Traefik's web entrypoint to 8080.

@@ -17,8 +17,9 @@ import java.util.List;
  * through the gateway's catch-all route), so this only matters for clients
  * reaching the API from another origin.
  *
- * Origins come from CORS_ALLOWED_ORIGINS as a comma-separated list. Note that
- * allowCredentials(true) forbids a "*" origin, so the list must stay explicit.
+ * Origins come from CORS_ALLOWED_ORIGINS as a comma-separated list of origin
+ * patterns, so "*" (any origin) or wildcards like "http://10.100.50.*:8080" work
+ * even with allowCredentials(true).
  */
 @Configuration
 public class CorsConfig {
@@ -29,7 +30,7 @@ public class CorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedOriginPatterns(allowedOrigins);
         config.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));

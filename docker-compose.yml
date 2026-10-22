@@ -9,7 +9,7 @@ x-common-env: &common-env
   EUREKA_URL: http://eureka-server:8761/eureka/
   JWT_SECRET: ${JWT_SECRET}
   JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-36000000}
-  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
 
 x-db-env: &db-env
   DB_URL: jdbc:postgresql://postgres:5432/library_metadata

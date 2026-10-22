@@ -2,7 +2,7 @@
 #
 # ServiceLB publishes Traefik's LoadBalancer ports on every node, so after this
 # change http://<any-node-ip>:8080 reaches the gateway. Each origin the browser
-# uses must be listed in CORS_ALLOWED_ORIGINS in k8s/config.env.
+# uses must match CORS_ALLOWED_ORIGINS in k8s/config.env ("*" by default).
 #
 # Apply once:  kubectl apply -f k8s/k3s/traefik-config.yaml
 # (or copy it into /var/lib/rancher/k3s/server/manifests/ on the server)

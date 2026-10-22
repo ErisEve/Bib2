@@ -97,7 +97,7 @@ kind create cluster --config k8s/kind-cluster.yaml
 
 `k8s/kind-cluster.yaml` does two things worth knowing about. It pins the node image to Kubernetes v1.34.11 rather than taking kind's newest default, because the ingress controller installed in the next step does not support anything newer than 1.35 yet. And it maps host port **8080** onto port 80 inside the node.
 
-That port number is not arbitrary. The gateway and the four services only accept browser requests from the origins listed in `CORS_ALLOWED_ORIGINS` (`k8s/config.env`), and the browser's `Origin` header travels through the gateway to them. `http://localhost:8080` is in that list; to serve the application on another host or port, add it there and re-apply, otherwise logins fail with a 403.
+That port number is not arbitrary. The gateway and the four services only accept browser requests from the origins listed in `CORS_ALLOWED_ORIGINS` (`k8s/config.env`), and the browser's `Origin` header travels through the gateway to them. The default is `*`, which accepts any origin. If you replace it with an explicit list (patterns such as `http://10.100.50.*:8080` work), every host and port you serve the app on has to match, otherwise logins fail with a 403.
 
 Then install the ingress controller and wait for it:
 
@@ -178,7 +178,7 @@ kind delete cluster --name biblioteka
 ### Troubleshooting
 - **A pod sits in `Init:0/2` or `Init:1/2`.** It is waiting on a dependency. `kubectl -n biblioteka logs <pod> -c wait-for-postgres` (or `-c wait-for-gateway`) prints what it is waiting for.
 - **`ErrImageNeverPull` or `ImagePullBackOff`.** The image was not loaded into the node. Re-run step 4, and check `docker images | grep biblioteka` first — if a tag is missing, the build in step 2 did not finish.
-- **A 403 on login.** The address in your browser is not listed in `CORS_ALLOWED_ORIGINS` in `k8s/config.env`. Add it (scheme, host and port), `kubectl apply -k k8s/`, and restart the Deployments. See the note in step 3.
+- **A 403 on login, or "Invalid CORS request".** The address in your browser does not match `CORS_ALLOWED_ORIGINS` in `k8s/config.env`. Add it (scheme, host and port) or set it to `*`, `kubectl apply -k k8s/`, and restart the Deployments. See the note in step 3.
 - **A 405 right after a pod restart.** The gateway caches the Eureka registry for about 30 seconds, so for a moment it still routes to the address of a pod that no longer exists, the circuit breaker opens, and the fallback handler — which only accepts GET — answers a POST with 405. It clears on its own; wait half a minute and try again.
 - **`too many open files` during cluster creation.** WSL's inotify limits are too low for kind. Raise them with `sudo sysctl fs.inotify.max_user_instances=512`.
 
@@ -192,7 +192,7 @@ Three rules keep the workloads off the server and out of trouble:
 - Every workload selects `node-role.kubernetes.io/worker=worker`, and only the agents carry that label.
 - Nothing is pinned by `kubernetes.io/hostname`. If a pinned name does not exactly match the node's label, the kubelet rejects the pod and the ReplicaSet recreates it in an endless loop. That is how this cluster once piled up ~11k dead pods.
 
-**Server** — install `k8s/k3s/server-config.yaml` as `/etc/rancher/k3s/config.yaml`, restart, and put Traefik on port 8080. ServiceLB publishes it on every node, so the app is reachable at `http://<node-ip>:8080` once that origin is listed in `CORS_ALLOWED_ORIGINS` in `k8s/config.env`:
+**Server** — install `k8s/k3s/server-config.yaml` as `/etc/rancher/k3s/config.yaml`, restart, and put Traefik on port 8080. ServiceLB publishes it on every node, so the app is reachable at `http://<node-ip>:8080` as long as that origin matches `CORS_ALLOWED_ORIGINS` in `k8s/config.env` (`*` by default):
 
 ```bash
 sudo install -m 600 k8s/k3s/server-config.yaml /etc/rancher/k3s/config.yaml

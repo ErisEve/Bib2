@@ -36,8 +36,9 @@ public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    // Comma-separated list, shared with the gateway. Must contain the origin the
-    // browser actually uses, or logins fail with a 403.
+    // Comma-separated origin patterns ("*" allows any origin), shared with the
+    // gateway. Must match the origin the browser actually uses, or logins fail
+    // with a 403.
     @Value("${CORS_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:8082,http://localhost:8083}")
     private List<String> allowedOrigins;
 
@@ -109,7 +110,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedOriginPatterns(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
