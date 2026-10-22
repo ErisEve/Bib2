@@ -1,0 +1,19 @@
+# Test profile: lets @SpringBootTest start with no PostgreSQL and no Eureka, so
+# `mvn test` runs in CI. H2 in PostgreSQL mode stands in for the shared database
+# and Hibernate builds the schema from the entities, as ddl-auto: update does.
+spring:
+    datasource:
+        url: jdbc:h2:mem:library_metadata;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+        username: sa
+        password: ""
+        driver-class-name: org.h2.Driver
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.H2Dialect
+
+eureka:
+    client:
+        enabled: false

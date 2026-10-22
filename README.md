@@ -209,15 +209,31 @@ kubectl label node <agent-1> <agent-2> node-role.kubernetes.io/worker=worker --o
 
 k3s agents cannot set a `node-role.kubernetes.io/*` label on themselves, which is why this step is manual.
 
-**Images** — the seven service images are built by GitHub Actions (`.github/workflows/images.yml`) and published to GHCR as `ghcr.io/eriseve/biblioteka/<name>`. The manifests still say `biblioteka/<name>:dev`; the `images:` block in `k8s/kustomization.yaml` rewrites them to the GHCR names, and the containers use `imagePullPolicy: Always`, so the agents pull straight from the registry.
+**Images** — the seven service images are built by GitHub Actions (`.github/workflows/ci.yml`, after the tests pass) and published to GHCR as `ghcr.io/eriseve/biblioteka/<name>`. The manifests still say `biblioteka/<name>:dev`; the `images:` block in `k8s/kustomization.yaml` rewrites them to the GHCR names, and the containers use `imagePullPolicy: Always`, so the agents pull straight from the registry.
 
 | Event | Tags |
 | --- | --- |
-| push to `main` | `main`, `sha-<short>` |
+| push to `main` | `main`, `sha-<short>`, then deployed (see below) |
 | git tag `v1.2.3` | `1.2.3`, `1.2`, `latest`, `sha-<short>` |
-| pull request | built, not pushed |
+| pull request | tested and built, not pushed |
 
-The cluster tracks `main` by default. After a new build finishes, `kubectl -n biblioteka rollout restart deploy` picks it up. To pin a release, cut a tag (`git tag v1.0.0 && git push origin v1.0.0`) and set every `newTag` in `k8s/kustomization.yaml` to `1.0.0`.
+**Automatic deploys** — every push to `main` is deployed by the `deploy` job, which runs `k8s/deploy.sh` on a self-hosted GitHub Actions runner on the server. The script:
+
+1. applies `k8s/` from that commit, with every image pinned to its immutable `sha-<short>` tag;
+2. waits for every Deployment and StatefulSet rollout (`ROLLOUT_TIMEOUT`, default 10 minutes);
+3. runs `k8s/smoke-test.sh`, which goes through the Ingress the way a browser does: it loads the UI, logs in, and reads books, lendings and seats with the token. It retries for up to 4 minutes while the gateway's Eureka cache catches up;
+4. records the commit as the last good one in ConfigMap `biblioteka-deploy`. If step 2 or 3 fails, it re-deploys that last good commit (its manifests, config and images), checks it the same way, and fails the job.
+
+The rollback does not undo database changes: if a broken build altered tables through `ddl-auto: update`, those changes stay. The smoke test logs in as `test@example.com` from the seed data. Set the repository variable `SMOKE_EMAIL` and the secret `SMOKE_PASSWORD` to use another account, and `SMOKE_BASE_URL` to test another address. Don't cancel a running deploy job: a cancelled job skips the rollback.
+
+```bash
+kubectl -n biblioteka get configmap biblioteka-deploy -o jsonpath='{.data}'   # what is deployed
+k8s/smoke-test.sh                                                             # check the cluster by hand
+```
+
+Setting up the runner (once): on GitHub, open **Settings → Actions → Runners → New self-hosted runner** (Linux x64) and run its download and `config.sh` steps on the server as the user that owns `~/.kube/config`, adding `--labels biblioteka-deploy`. Then install it as a service with `sudo ./svc.sh install "$USER" && sudo ./svc.sh start`. The repository is public, so under **Settings → Actions → General**, set "Fork pull request workflows from outside collaborators" to **Require approval for all outside collaborators**. Otherwise a fork's pull request could edit the workflow and run its own code on the runner, which has cluster-admin access.
+
+Applying `k8s/` by hand (`kubectl apply -k k8s/`) still works, but it moves the images back to `:main`. Pushing to `main` is the normal way to deploy. To pin a release by hand, cut a tag (`git tag v1.0.0 && git push origin v1.0.0`) and set every `newTag` in `k8s/kustomization.yaml` to `1.0.0`.
 
 New GHCR packages start out private. After the first workflow run, set each of the seven packages to **Public** (package page → Package settings → Change visibility), otherwise the agents get `ImagePullBackOff`.
 

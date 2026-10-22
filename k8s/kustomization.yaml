@@ -31,9 +31,11 @@ secretGenerator:
 
 # The manifests name the images biblioteka/<name>:dev (the docker-compose tags);
 # this retargets them to the GHCR images published by
-# .github/workflows/images.yml. `main` follows the main branch - the containers
+# .github/workflows/ci.yml. `main` follows the main branch - the containers
 # use imagePullPolicy: Always, so `kubectl rollout restart` picks up a new
 # build. To pin a release, set newTag to a version (1.2.3) or sha-<short>.
+# CI deploys go through k8s/deploy.sh, which rewrites every newTag to the
+# commit's sha-<short> (so it can roll back) - keep all seven on one tag.
 images:
   - name: biblioteka/eureka-server
     newName: ghcr.io/eriseve/biblioteka/eureka-server

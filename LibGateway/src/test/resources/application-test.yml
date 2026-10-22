@@ -1,0 +1,5 @@
+# Test profile: lets @SpringBootTest start with no Eureka server, so `mvn test`
+# runs in CI.
+eureka:
+  client:
+    enabled: false

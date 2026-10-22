@@ -10,8 +10,8 @@ COPY pom.xml .
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
 
 COPY src ./src
-# -DskipTests is required, not an optimisation: the only test in every module is a
-# @SpringBootTest contextLoads() that needs PostgreSQL and Eureka reachable.
+# Tests are skipped here because CI runs them in its own job before building
+# (see .github/workflows/ci.yml); running them again would only slow the build.
 RUN --mount=type=cache,target=/root/.m2 mvn -B -DskipTests package
 
 # ---- runtime stage -----------------------------------------------------------

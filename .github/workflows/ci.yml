@@ -1,0 +1,164 @@
+# Tests every module, builds the seven service images, publishes them to GHCR
+# as ghcr.io/<owner>/biblioteka/<image> and, for main, deploys them to the k3s
+# cluster.
+#
+#   push to main  -> :main, :sha-<short>, then deployed (see the deploy job)
+#   tag v1.2.3    -> :1.2.3, :1.2, :latest, :sha-<short>
+#   pull request  -> tested and built, not pushed
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+# A newer push supersedes an older run, except on main: cancelling there could
+# interrupt a deploy between a failed rollout and its rollback. Main runs queue
+# instead (GitHub keeps only the newest one pending).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  # The Spring Boot tests start each service with the `test` profile (H2 in
+  # place of PostgreSQL, Eureka off), so they need no services here.
+  test-java:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - eureka-discovery-server
+          - LibGateway
+          - user-service
+          - library-management-service
+          - loan-management-service
+          - seat-reservation-service
+          - BibliotekaUI
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: ${{ matrix.module }}/pom.xml
+
+      # Plain mvn: the mvnw wrappers in the modules are broken.
+      - name: mvn test
+        working-directory: ${{ matrix.module }}
+        run: mvn -B test
+
+  test-ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BibliotekaUI
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: BibliotekaUI/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+
+  build:
+    needs: [test-java, test-ui]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Every image is rebuilt on every run (no path filters) so all seven always
+      # carry the same tags - kustomize points every deployment at one tag.
+      # Image names follow docker-compose.yml, not the directory names.
+      matrix:
+        include:
+          - context: eureka-discovery-server
+            image: eureka-server
+          - context: LibGateway
+            image: gateway-service
+          - context: user-service
+            image: user-service
+          - context: library-management-service
+            image: library-service
+          - context: loan-management-service
+            image: loan-service
+          - context: seat-reservation-service
+            image: seat-service
+          - context: BibliotekaUI
+            image: ui-service
+    steps:
+      - uses: actions/checkout@v4
+
+      # GHCR repository names must be lowercase; the owner is not.
+      - name: Lowercase owner
+        id: owner
+        run: echo "name=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.owner.outputs.name }}/biblioteka/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # The cluster nodes are x86_64, so no multi-arch build.
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.context }}
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max
+
+  # Rolls the cluster forward to this commit's sha-<short> images, waits for the
+  # rollouts, smoke tests through the Ingress and, if anything fails, rolls back
+  # to the last good commit - all in k8s/deploy.sh. Runs on the self-hosted
+  # runner on kube01 (label biblioteka-deploy), which has kubectl access.
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, biblioteka-deploy]
+    environment: production
+    timeout-minutes: 45
+    steps:
+      # Full history: a rollback renders the manifests of the last good commit.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy, smoke test, roll back on failure
+        run: k8s/deploy.sh "$GITHUB_SHA"
+        env:
+          # Optional repository variables; the scripts have defaults.
+          SMOKE_BASE_URL: ${{ vars.SMOKE_BASE_URL }}
+          SMOKE_EMAIL: ${{ vars.SMOKE_EMAIL }}
+          SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
