@@ -20,3 +20,7 @@ Thumbs.db
 
 # Kubernetes secrets
 k8s/secrets.env
+
+# Raw k6 output of the experiments (large); per_second.csv keeps the gist
+experiments/results/**/k6.csv
+experiments/results/**/k6.csv.gz
