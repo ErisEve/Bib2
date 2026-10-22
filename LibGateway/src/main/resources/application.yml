@@ -12,6 +12,12 @@ spring:
           enabled: true  # Enables automatic route discovery
           lower-case-service-id: true
 
+      # The gateway (CorsConfig) and each downstream service both add CORS
+      # headers. Browsers reject a doubled Access-Control-Allow-Origin, so keep
+      # only the first of each.
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+
       routes:
         # ============================================
         # USER SERVICE ROUTES
