@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Boots the whole service on a random port with the `test` profile (H2 instead of PostgreSQL, Eureka off) and checks the
+// Boots the whole service on a random port with the `test` profile (H2 instead of PostgreSQL) and checks the
 // health endpoint the Kubernetes probes rely on. Needs no running infrastructure.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")

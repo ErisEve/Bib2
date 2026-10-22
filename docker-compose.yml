@@ -1,12 +1,11 @@
 # Local verification harness for the container images.
 #
-# This is not the Kubernetes target - it exists to prove the images build, register
-# with Eureka and talk to each other over container networking before the manifests
-# are written. Only the gateway and the Eureka dashboard are published, mirroring
-# the k8s model where just the gateway gets an Ingress.
+# This is not the Kubernetes target - it exists to prove the images build and talk
+# to each other over container networking before the manifests are written. Only
+# the gateway is published, mirroring the k8s model where just the gateway gets an
+# Ingress.
 
 x-common-env: &common-env
-  EUREKA_URL: http://eureka-server:8761/eureka/
   JWT_SECRET: ${JWT_SECRET}
   JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-36000000}
   CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
@@ -37,30 +36,21 @@ services:
       timeout: 5s
       retries: 20
 
-  # Startup order is eureka -> gateway -> everything else. Services and Feign
-  # clients target the gateway, so nothing inter-service works until both are up.
-  eureka-server:
-    <<: *service-defaults
-    build: ./eureka-discovery-server
-    image: biblioteka/eureka-server:dev
-    environment:
-      EUREKA_INSTANCE_HOSTNAME: eureka-server
-    ports:
-      # Host port is overridable so this can run alongside an IntelliJ session
-      # that already holds 8761.
-      - "${EUREKA_PORT:-8761}:8761"
-
+  # The gateway starts first. Services and Feign clients target the gateway, so
+  # nothing inter-service works until it is up.
   gateway-service:
     <<: *service-defaults
     build: ./LibGateway
     image: biblioteka/gateway-service:dev
     environment:
       <<: *common-env
+      USER_SERVICE_URL: http://user-service:8082
+      LIBRARY_SERVICE_URL: http://library-management-service:8081
+      LOAN_SERVICE_URL: http://loan-management-service:8083
+      SEAT_SERVICE_URL: http://seat-management-service:8084
+      UI_SERVICE_URL: http://ui-service:8017
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
-    depends_on:
-      eureka-server:
-        condition: service_healthy
 
   user-service:
     <<: *service-defaults

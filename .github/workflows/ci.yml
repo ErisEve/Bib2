@@ -1,4 +1,4 @@
-# Tests every module, builds the seven service images, publishes them to GHCR
+# Tests every module, builds the six service images, publishes them to GHCR
 # as ghcr.io/<owner>/biblioteka/<image> and, for main, deploys them to the k3s
 # cluster.
 #
@@ -26,8 +26,8 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  # The Spring Boot tests start each service with the `test` profile (H2 in
-  # place of PostgreSQL, Eureka off), so they need no services here.
+  # The Spring Boot tests need no running services: the data services start with
+  # the `test` profile (H2 in place of PostgreSQL).
   test-java:
     runs-on: ubuntu-latest
     strategy:
@@ -78,13 +78,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # Every image is rebuilt on every run (no path filters) so all seven always
+      # Every image is rebuilt on every run (no path filters) so all six always
       # carry the same tags - kustomize points every deployment at one tag.
       # Image names follow docker-compose.yml, not the directory names.
       matrix:
         include:
-          - context: eureka-discovery-server
-            image: eureka-server
           - context: LibGateway
             image: gateway-service
           - context: user-service

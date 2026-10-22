@@ -5,8 +5,8 @@
 #   k8s/smoke-test.sh [base-url]
 #
 # The checks are retried until they all pass or SMOKE_TIMEOUT runs out, because
-# the gateway caches the Eureka registry for ~30s and answers with fallbacks
-# (503) until it has seen the freshly started pods.
+# the gateway answers with fallbacks (503) while the services behind it are
+# still starting.
 #
 # Environment:
 #   SMOKE_BASE_URL   default http://10.100.50.11:8080 (any node works)

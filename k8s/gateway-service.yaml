@@ -1,5 +1,5 @@
 # Spring Cloud Gateway. The only service the Ingress points at: its catch-all
-# route (Path=/**  ->  lb://ui-service) means the same hostname serves both the
+# route (Path=/**  ->  http://ui-service:8017) means the same hostname serves both the
 # API and the UI, so one Ingress rule covers everything.
 apiVersion: v1
 kind: Service
@@ -33,20 +33,6 @@ spec:
     spec:
       nodeSelector:
         node-role.kubernetes.io/worker: "worker"
-      initContainers:
-        # Kubernetes has no equivalent of Compose's `depends_on: service_healthy`.
-        # Without this gate the pod would boot, fail to reach the registry, and
-        # sit in CrashLoopBackOff until it happened to succeed.
-        - name: wait-for-eureka
-          image: busybox:stable
-          command:
-            - sh
-            - -c
-            - |
-              until wget -q -O- http://eureka-server:8761/actuator/health/readiness | grep -q UP; do
-                echo "waiting for eureka-server..."
-                sleep 3
-              done
       containers:
         - name: gateway-service
           image: biblioteka/gateway-service:dev

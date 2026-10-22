@@ -1,5 +1,5 @@
-# Seat reservations. Directory is seat-reservation-service, but the Service name must match
-# spring.application.name (seat-management-service) - that is what the gateway's lb:// route resolves.
+# Seat reservations. Directory is seat-reservation-service, but the Service is named after
+# spring.application.name (seat-management-service) - SEAT_SERVICE_URL in config.env points at it.
 apiVersion: v1
 kind: Service
 metadata:

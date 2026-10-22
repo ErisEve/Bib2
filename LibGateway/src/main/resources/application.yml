@@ -7,23 +7,20 @@ spring:
 
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true  # Enables automatic route discovery
-          lower-case-service-id: true
-
       # The gateway (CorsConfig) and each downstream service both add CORS
       # headers. Browsers reject a doubled Access-Control-Allow-Origin, so keep
       # only the first of each.
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
+      # Each route points at a plain URL. On Kubernetes (k8s/config.env) and in Compose these are
+      # the Service names, which load-balance across pods themselves; the defaults are for local runs.
       routes:
         # ============================================
         # USER SERVICE ROUTES
         # ============================================
         - id: user-service
-          uri: lb://user-service  # Load-balanced routing via Eureka
+          uri: ${USER_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/users/**, /api/auth/**
           filters:
@@ -37,7 +34,7 @@ spring:
         # LIBRARY SERVICE (BOOKS) ROUTES
         # ============================================
         - id: library-management-service
-          uri: lb://library-management-service
+          uri: ${LIBRARY_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/books/**
           filters:
@@ -51,7 +48,7 @@ spring:
         # LOAN SERVICE ROUTES
         # ============================================
         - id: loan-management-service
-          uri: lb://loan-management-service
+          uri: ${LOAN_SERVICE_URL:http://localhost:8083}
           predicates:
             - Path=/api/lendings/**
           filters:
@@ -65,7 +62,7 @@ spring:
         # SEAT SERVICE ROUTES
         # ============================================
         - id: seat-management-service
-          uri: lb://seat-management-service
+          uri: ${SEAT_SERVICE_URL:http://localhost:8084}
           predicates:
             - Path=/api/seats/**
           filters:
@@ -79,7 +76,7 @@ spring:
         # UI SERVICE ROUTES
         # ============================================
         - id: ui-service
-          uri: lb://ui-service
+          uri: ${UI_SERVICE_URL:http://localhost:8017}
           predicates:
             - Path=/**
           filters:
@@ -127,16 +124,6 @@ resilience4j:
       seatService:
         timeoutDuration: 30s
 
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
 
 # Actuator endpoints
 management:

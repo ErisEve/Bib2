@@ -26,18 +26,16 @@ Nothing has to be configured for a local run — every setting below has a worki
 | `JWT_SECRET` | a clearly-marked development value | HMAC-SHA signing key. **All services must use the same value**, otherwise tokens issued by the user service will not validate anywhere else |
 | `JWT_EXPIRATION_MS` | `36000000` (10 hours) | Token lifetime |
 
-### 2. Start the Eureka and Gateway services
-Before starting the whole application, it is important to first start the Eureka Discovery Server (the folder of the same name) and then LibGateway (the corresponding gateway service for this application), in exactly that order.
+### 2. Start the Gateway service
+Start LibGateway (the gateway service for this application) first. It routes every request to a fixed URL per service (`USER_SERVICE_URL`, `LIBRARY_SERVICE_URL`, `LOAN_SERVICE_URL`, `SEAT_SERVICE_URL`, `UI_SERVICE_URL`), which default to the services' local ports on `localhost`, so nothing has to be configured for a local run.
 
-Every module is a Maven project on Java 17 and Spring Boot 3.2.5 (the Eureka server uses a newer parent), so they can all be opened in a single IntelliJ window. An earlier version of this repository also carried a stray Gradle build inside the UI module that declared a different Spring Boot version; it has been removed, since it was what made a single-window setup fail.
+Every module is a Maven project on Java 17 and Spring Boot 3.2.5, so they can all be opened in a single IntelliJ window. (`eureka-discovery-server` is an earlier service registry that is no longer used or deployed.) An earlier version of this repository also carried a stray Gradle build inside the UI module that declared a different Spring Boot version; it has been removed, since it was what made a single-window setup fail.
 ### 3. Start all the other services in exactly the same way
-Nothing special — just open them all in IntelliJ and check whether they register with the Eureka server, which runs on port/link http://localhost:8761/ .
+Nothing special — just open them all in IntelliJ and run them.
 The application itself will be available on the gateway port http://localhost:8080/ .
 
-![eureka pic](https://github.com/ericges/BibliotekaApp-UI-API/blob/main/Pasted%20image%2020260622040136.png)
-
 ## Running with Docker Compose
-The three sections above describe running the modules straight out of IntelliJ. Every module now also has a `Dockerfile`, and `docker-compose.yml` at the repository root builds and wires all seven of them together, so this is the shorter route.
+The three sections above describe running the modules straight out of IntelliJ. Every module now also has a `Dockerfile`, and `docker-compose.yml` at the repository root builds and wires all six of them together, so this is the shorter route.
 
 Copy `.env.example` to `.env` and fill it in — `POSTGRES_PASSWORD` and `JWT_SECRET` have no defaults there on purpose. Then:
 
@@ -46,7 +44,7 @@ docker compose up --build -d
 docker compose ps          # every service should reach (healthy)
 ```
 
-The first build takes a while because each module is compiled inside its own Maven container. Once it settles, the application is on http://localhost:8080/ and the Eureka dashboard on http://localhost:8761/. Only those two ports are published; the other five services talk to each other over the internal Compose network, which is exactly how they behave on Kubernetes.
+The first build takes a while because each module is compiled inside its own Maven container. Once it settles, the application is on http://localhost:8080/. Only the gateway's port is published; the other five services talk to each other over the internal Compose network, which is exactly how they behave on Kubernetes.
 
 The database still has to be filled once, for the reason explained in step 1 — Hibernate creates the tables, the dump only carries the rows:
 
@@ -112,10 +110,10 @@ The images exist only in your local Docker, and they are tagged `:dev`, not push
 
 ```bash
 kind load docker-image --name biblioteka \
-  biblioteka/eureka-server:dev biblioteka/gateway-service:dev \
-  biblioteka/user-service:dev biblioteka/library-service:dev \
-  biblioteka/loan-service:dev biblioteka/seat-service:dev \
-  biblioteka/ui-service:dev postgres:17 busybox:stable
+  biblioteka/gateway-service:dev biblioteka/user-service:dev \
+  biblioteka/library-service:dev biblioteka/loan-service:dev \
+  biblioteka/seat-service:dev biblioteka/ui-service:dev \
+  postgres:17 busybox:stable
 ```
 
 > **Note:** `k8s/kustomization.yaml` now points the deployments at the GHCR images with `imagePullPolicy: Always` (see [Running on k3s](#running-on-k3s-one-server-two-agents)), so a kind cluster with internet access pulls them itself and ignores locally loaded `:dev` images. To run your own local builds on kind, remove the `images:` block and set the pull policy back to `IfNotPresent`.
@@ -135,7 +133,7 @@ kubectl apply -k k8s/
 kubectl -n biblioteka get pods -w
 ```
 
-Give it two to three minutes. Kubernetes has no equivalent of Compose's `depends_on`, so the same eureka → gateway → everything else order is enforced with init containers instead. A pod showing `Init:1/2` is not stuck; it is waiting for something it needs, and `kubectl -n biblioteka logs <pod> -c wait-for-gateway` will say what. All eight pods should end up `1/1 Running`.
+Give it two to three minutes. Kubernetes has no equivalent of Compose's `depends_on`, so the same gateway → everything else order is enforced with init containers instead. A pod showing `Init:1/2` is not stuck; it is waiting for something it needs, and `kubectl -n biblioteka logs <pod> -c wait-for-gateway` will say what. All seven pods should end up `1/1 Running`.
 
 ### 7. Load the test data
 Same bootstrap order as always: the dump is data-only, so the tables have to exist first. The job below handles the waiting itself — it polls until Hibernate has created all four tables, skips the load entirely if the data is already there, and strips the psql-only lines out of the dump before running it.
@@ -152,13 +150,7 @@ The tail should print 27 books, 8 users, 32 seats and 8 lendings.
 ### 8. Use it
 The application is on http://localhost:8080/ — the same address as always, so the screenshots further down still apply. Log in with any user from the database; every password is `123`.
 
-The Eureka dashboard is not exposed through the ingress, since nothing outside the cluster needs it. Forward it when you want to look:
-
-```bash
-kubectl port-forward -n biblioteka svc/eureka-server 8761:8761
-```
-
-Six applications should be registered — the gateway, the four services and the UI. They register their **pod** IP rather than a hostname, which is why `lb://` routing inside the gateway keeps working even when a pod is replaced and gets a new address.
+The gateway reaches each service through its Kubernetes Service name (set in `k8s/config.env`), and the Service spreads requests over whichever pods are ready, so a replaced pod with a new address is picked up without any registry.
 
 ### 9. Changing a service, and tearing down
 After editing one module, rebuild just that image, push it into the node and restart its Deployment:
@@ -179,11 +171,11 @@ kind delete cluster --name biblioteka
 - **A pod sits in `Init:0/2` or `Init:1/2`.** It is waiting on a dependency. `kubectl -n biblioteka logs <pod> -c wait-for-postgres` (or `-c wait-for-gateway`) prints what it is waiting for.
 - **`ErrImageNeverPull` or `ImagePullBackOff`.** The image was not loaded into the node. Re-run step 4, and check `docker images | grep biblioteka` first — if a tag is missing, the build in step 2 did not finish.
 - **A 403 on login, or "Invalid CORS request".** The address in your browser does not match `CORS_ALLOWED_ORIGINS` in `k8s/config.env`. Add it (scheme, host and port) or set it to `*`, `kubectl apply -k k8s/`, and restart the Deployments. See the note in step 3.
-- **A 405 right after a pod restart.** The gateway caches the Eureka registry for about 30 seconds, so for a moment it still routes to the address of a pod that no longer exists, the circuit breaker opens, and the fallback handler — which only accepts GET — answers a POST with 405. It clears on its own; wait half a minute and try again.
+- **A 405 right after a pod restart.** While a service has no ready pod, the circuit breaker opens and the fallback handler — which only accepts GET — answers a POST with 405. It clears on its own once the pod is ready; wait half a minute and try again.
 - **`too many open files` during cluster creation.** WSL's inotify limits are too low for kind. Raise them with `sudo sysctl fs.inotify.max_user_instances=512`.
 
 ## Running on k3s (one server, two agents)
-The same `k8s/` manifests also run on a multi-node k3s cluster. The server machine runs only the control plane and the k3s add-ons. All eight Biblioteka pods run on the two agents.
+The same `k8s/` manifests also run on a multi-node k3s cluster. The server machine runs only the control plane and the k3s add-ons. All seven Biblioteka pods run on the two agents.
 
 This is the production setup. It currently runs on three dedicated Ubuntu machines (`kube01` as the server, `kube02` and `kube03` as agents). WSL2 is used only for development (see the kind section above), but a WSL2 machine can still join as an agent if it has to; the WSL-specific steps below apply only in that case.
 
@@ -221,7 +213,7 @@ k3s agents cannot set a `node-role.kubernetes.io/*` label on themselves, which i
 
 1. applies `k8s/` from that commit, with every image pinned to its immutable `sha-<short>` tag;
 2. waits for every Deployment and StatefulSet rollout (`ROLLOUT_TIMEOUT`, default 10 minutes);
-3. runs `k8s/smoke-test.sh`, which goes through the Ingress the way a browser does: it loads the UI, logs in, and reads books, lendings and seats with the token. It retries for up to 4 minutes while the gateway's Eureka cache catches up;
+3. runs `k8s/smoke-test.sh`, which goes through the Ingress the way a browser does: it loads the UI, logs in, and reads books, lendings and seats with the token. It retries for up to 4 minutes while the services finish starting;
 4. records the commit as the last good one in ConfigMap `biblioteka-deploy`. If step 2 or 3 fails, it re-deploys that last good commit (its manifests, config and images), checks it the same way, and fails the job.
 
 The rollback does not undo database changes: if a broken build altered tables through `ddl-auto: update`, those changes stay. The smoke test logs in as `test@example.com` from the seed data. Set the repository variable `SMOKE_EMAIL` and the secret `SMOKE_PASSWORD` to use another account, and `SMOKE_BASE_URL` to test another address. Don't cancel a running deploy job: a cancelled job skips the rollback.

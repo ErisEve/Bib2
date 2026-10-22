@@ -51,7 +51,7 @@ render() {
   kc get secret biblioteka-secrets \
     -o go-template='{{range $k, $v := .data}}{{$k}}={{$v | base64decode}}{{"\n"}}{{end}}' \
     > "$dir/k8s/secrets.env" || return 1
-  # Every image is built and tagged on every CI run, so one tag fits all seven.
+  # Every image is built and tagged on every CI run, so one tag fits all six.
   sed -i -E "s/^(\s*newTag:).*/\1 $tag/" "$dir/k8s/kustomization.yaml"
 
   # Guard against the sed missing an image: nothing may still point at a moving tag.

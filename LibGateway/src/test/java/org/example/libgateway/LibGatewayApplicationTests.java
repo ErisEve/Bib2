@@ -8,17 +8,15 @@ import org.springframework.cloud.gateway.config.GatewayProperties;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Boots the whole service on a random port with the `test` profile (Eureka off) and checks the
-// health endpoint the Kubernetes probes rely on. Needs no running infrastructure.
+// Boots the whole service on a random port and checks the health endpoint the Kubernetes probes
+// rely on. Needs no running infrastructure.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
 class LibGatewayApplicationTests {
 
     @Autowired
@@ -37,8 +35,7 @@ class LibGatewayApplicationTests {
 
     // A fallbackUri in application.yml that FallbackController does not map falls through to the
     // catch-all /** route and is proxied to ui-service instead (the loan route once pointed at
-    // /fallback/loans). Here that also answers 503, but from the load balancer, so the body is what
-    // tells the two apart.
+    // /fallback/loans). That proxied request also fails, so the body is what tells the two apart.
     @Test
     void everyCircuitBreakerFallbackIsServed() {
         List<String> fallbacks = gatewayProperties.getRoutes().stream()

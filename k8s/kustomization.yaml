@@ -6,7 +6,6 @@ namespace: biblioteka
 resources:
   - namespace.yaml
   - postgres.yaml
-  - eureka-server.yaml
   - gateway-service.yaml
   - user-service.yaml
   - library-management-service.yaml
@@ -35,11 +34,8 @@ secretGenerator:
 # use imagePullPolicy: Always, so `kubectl rollout restart` picks up a new
 # build. To pin a release, set newTag to a version (1.2.3) or sha-<short>.
 # CI deploys go through k8s/deploy.sh, which rewrites every newTag to the
-# commit's sha-<short> (so it can roll back) - keep all seven on one tag.
+# commit's sha-<short> (so it can roll back) - keep all six on one tag.
 images:
-  - name: biblioteka/eureka-server
-    newName: ghcr.io/eriseve/biblioteka/eureka-server
-    newTag: main
   - name: biblioteka/gateway-service
     newName: ghcr.io/eriseve/biblioteka/gateway-service
     newTag: main
