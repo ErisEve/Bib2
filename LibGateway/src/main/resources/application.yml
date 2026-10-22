@@ -13,6 +13,13 @@ spring:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
+      # A Service balances per connection, not per request, so pooled keep-alive connections
+      # are recycled; otherwise one could stay pinned to a pod that has since been replaced.
+      httpclient:
+        pool:
+          max-idle-time: 30s
+          max-life-time: 60s
+
       # Each route points at a plain URL. On Kubernetes (k8s/config.env) and in Compose these are
       # the Service names, which load-balance across pods themselves; the defaults are for local runs.
       routes:

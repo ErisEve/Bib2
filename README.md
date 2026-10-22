@@ -29,7 +29,7 @@ Nothing has to be configured for a local run — every setting below has a worki
 ### 2. Start the Gateway service
 Start LibGateway (the gateway service for this application) first. It routes every request to a fixed URL per service (`USER_SERVICE_URL`, `LIBRARY_SERVICE_URL`, `LOAN_SERVICE_URL`, `SEAT_SERVICE_URL`, `UI_SERVICE_URL`), which default to the services' local ports on `localhost`, so nothing has to be configured for a local run.
 
-Every module is a Maven project on Java 17 and Spring Boot 3.2.5, so they can all be opened in a single IntelliJ window. (`eureka-discovery-server` is an earlier service registry that is no longer used or deployed.) An earlier version of this repository also carried a stray Gradle build inside the UI module that declared a different Spring Boot version; it has been removed, since it was what made a single-window setup fail.
+Every module is a Maven project on Java 17 and Spring Boot 3.2.5 (except `eureka-discovery-server`, an earlier service registry on a newer parent that is no longer used or deployed), so they can all be opened in a single IntelliJ window. An earlier version of this repository also carried a stray Gradle build inside the UI module that declared a different Spring Boot version; it has been removed, since it was what made a single-window setup fail.
 ### 3. Start all the other services in exactly the same way
 Nothing special — just open them all in IntelliJ and run them.
 The application itself will be available on the gateway port http://localhost:8080/ .

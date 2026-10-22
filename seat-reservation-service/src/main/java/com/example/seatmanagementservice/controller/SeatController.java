@@ -5,7 +5,6 @@ import com.example.seatmanagementservice.feign_client.UserClient;
 import com.example.seatmanagementservice.model.Seat;
 import com.example.seatmanagementservice.model.User;
 import com.example.seatmanagementservice.service.SeatService;
-import com.netflix.discovery.converters.Auto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -34,7 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         module:
-          - eureka-discovery-server
           - LibGateway
           - user-service
           - library-management-service
