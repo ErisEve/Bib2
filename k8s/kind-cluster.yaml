@@ -1,0 +1,19 @@
+# Single-node cluster for the Biblioteka stack.
+#
+# hostPort 8080 -> containerPort 80 keeps the app on http://localhost:8080,
+# which is in the default CORS_ALLOWED_ORIGINS (k8s/config.env). The browser's
+# Origin header is forwarded through the gateway, so serving on a host or port
+# missing from that list makes logins fail with 403.
+#
+# The node image is pinned rather than left to kind's default (v1.37.0): the
+# newest ingress-nginx release supports Kubernetes 1.35 at most.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: biblioteka
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.34.11
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 8080
+        protocol: TCP

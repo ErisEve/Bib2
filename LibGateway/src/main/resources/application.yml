@@ -1,0 +1,152 @@
+server:
+  port: 8080  # Gateway will run on port 8080
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true  # Enables automatic route discovery
+          lower-case-service-id: true
+
+      routes:
+        # ============================================
+        # USER SERVICE ROUTES
+        # ============================================
+        - id: user-service
+          uri: lb://user-service  # Load-balanced routing via Eureka
+          predicates:
+            - Path=/api/users/**, /api/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userService
+                fallbackUri: forward:/fallback/users
+            - StripPrefix=0
+
+        # ============================================
+        # LIBRARY SERVICE (BOOKS) ROUTES
+        # ============================================
+        - id: library-management-service
+          uri: lb://library-management-service
+          predicates:
+            - Path=/api/books/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: libraryService
+                fallbackUri: forward:/fallback/books
+            - StripPrefix=0
+
+        # ============================================
+        # LOAN SERVICE ROUTES
+        # ============================================
+        - id: loan-management-service
+          uri: lb://loan-management-service
+          predicates:
+            - Path=/api/lendings/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: loanService
+                fallbackUri: forward:/fallback/loans
+            - StripPrefix=0
+
+        # ============================================
+        # SEAT SERVICE ROUTES
+        # ============================================
+        - id: seat-management-service
+          uri: lb://seat-management-service
+          predicates:
+            - Path=/api/seats/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: seatService
+                fallbackUri: forward:/fallback/seats
+            - StripPrefix=0
+
+        # ============================================
+        # UI SERVICE ROUTES
+        # ============================================
+        - id: ui-service
+          uri: lb://ui-service
+          predicates:
+            - Path=/**
+          filters:
+            - StripPrefix=0
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+      libraryService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+      loanService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+      seatService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+
+  # The CircuitBreaker filter also applies a TimeLimiter, whose default is 1s. That is shorter than
+  # a normal call to Open Library from POST /api/books/fetch, so the gateway used to abandon the
+  # request and forward it to the fallback while the book was still being saved downstream.
+  timelimiter:
+    instances:
+      userService:
+        timeoutDuration: 30s
+      libraryService:
+        timeoutDuration: 30s
+      loanService:
+        timeoutDuration: 30s
+      seatService:
+        timeoutDuration: 30s
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG

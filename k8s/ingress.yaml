@@ -1,0 +1,25 @@
+# One rule is enough. The gateway already owns all routing: /api/** goes to the
+# individual services and its catch-all Path=/** falls through to the UI, so the
+# Ingress only has to get traffic as far as the gateway.
+#
+# No host is set, so it matches whatever hostname arrives. The browser's origin
+# must still be listed in CORS_ALLOWED_ORIGINS (k8s/config.env).
+#
+# k3s ships Traefik as its ingress controller, not ingress-nginx.
+# k8s/k3s/traefik-config.yaml moves Traefik's web entrypoint to 8080.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: biblioteka
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway-service
+                port:
+                  number: 8080

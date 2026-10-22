@@ -1,0 +1,86 @@
+# Spring Cloud Gateway. The only service the Ingress points at: its catch-all
+# route (Path=/**  ->  lb://ui-service) means the same hostname serves both the
+# API and the UI, so one Ingress rule covers everything.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+  labels:
+    app: gateway-service
+spec:
+  selector:
+    app: gateway-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-service
+  labels:
+    app: gateway-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-service
+  template:
+    metadata:
+      labels:
+        app: gateway-service
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: "worker"
+      initContainers:
+        # Kubernetes has no equivalent of Compose's `depends_on: service_healthy`.
+        # Without this gate the pod would boot, fail to reach the registry, and
+        # sit in CrashLoopBackOff until it happened to succeed.
+        - name: wait-for-eureka
+          image: busybox:stable
+          command:
+            - sh
+            - -c
+            - |
+              until wget -q -O- http://eureka-server:8761/actuator/health/readiness | grep -q UP; do
+                echo "waiting for eureka-server..."
+                sleep 3
+              done
+      containers:
+        - name: gateway-service
+          image: biblioteka/gateway-service:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: biblioteka-config
+            - secretRef:
+                name: biblioteka-secrets
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 640Mi
+              cpu: 1000m

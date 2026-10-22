@@ -1,0 +1,83 @@
+# Thymeleaf UI. No database and no JWT config of its own - it calls the gateway
+# over Feign. Its frontend JS uses relative URLs, so once it is served through
+# the gateway everything stays same-origin.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui-service
+  labels:
+    app: ui-service
+spec:
+  selector:
+    app: ui-service
+  ports:
+    - name: http
+      port: 8017
+      targetPort: 8017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-service
+  labels:
+    app: ui-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui-service
+  template:
+    metadata:
+      labels:
+        app: ui-service
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: "worker"
+      initContainers:
+        - name: wait-for-gateway
+          image: busybox:stable
+          command:
+            - sh
+            - -c
+            - |
+              until wget -q -O- http://gateway-service:8080/actuator/health/readiness | grep -q UP; do
+                echo "waiting for gateway-service..."
+                sleep 3
+              done
+      containers:
+        - name: ui-service
+          image: biblioteka/ui-service:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8017
+          envFrom:
+            - configMapRef:
+                name: biblioteka-config
+            - secretRef:
+                name: biblioteka-secrets
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8017
+            periodSeconds: 5
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8017
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8017
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 640Mi
+              cpu: 1000m

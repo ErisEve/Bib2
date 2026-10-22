@@ -1,0 +1,54 @@
+server:
+  port: 8017
+
+spring:
+  application:
+    name: ui-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+
+user:
+  service:
+    url: http://localhost:8081/
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway  # Add gateway if it's a gateway service
+      base-path: /actuator  # Default path
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      show-components: always
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    build:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: 1.0.0
+    description: ${spring.application.name} Service
+    java:
+      version: ${java.version}

@@ -1,0 +1,26 @@
+# k3s server (control plane) config. Install on the server machine as
+#   /etc/rancher/k3s/config.yaml
+# then: sudo systemctl restart k3s
+#
+# The server runs the control plane and the k3s add-ons (CoreDNS, Traefik,
+# metrics-server, local-path-provisioner) only. The Biblioteka workloads run on
+# the two agents.
+#
+# CriticalAddonsOnly is the taint the k3s docs recommend for a dedicated
+# server: the packaged add-ons tolerate it, application pods do not.
+# NoExecute also evicts any application pod already running here.
+#
+# Exception: the helm-install-* jobs k3s runs to (re)deploy Traefik after a
+# HelmChartConfig change do NOT tolerate it, so they only run on an agent. With
+# both agents offline they sit Pending. Either bring an agent up, or lift the
+# taint until the job completes and then re-add it:
+#   kubectl taint nodes <server-node> CriticalAddonsOnly=true:NoExecute-
+#
+# node-taint only applies when the node first registers. To apply it to a
+# server that is already registered:
+#   kubectl taint nodes <server-node> CriticalAddonsOnly=true:NoExecute
+node-taint:
+  - "CriticalAddonsOnly=true:NoExecute"
+
+# Kubeconfig readable without sudo, so kubectl works for your user.
+write-kubeconfig-mode: "0644"

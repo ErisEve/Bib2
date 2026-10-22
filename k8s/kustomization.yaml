@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: biblioteka
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - eureka-server.yaml
+  - gateway-service.yaml
+  - user-service.yaml
+  - library-management-service.yaml
+  - loan-management-service.yaml
+  - seat-management-service.yaml
+  - ui-service.yaml
+  - ingress.yaml
+
+configMapGenerator:
+  - name: biblioteka-config
+    envs:
+      - config.env
+    options:
+      disableNameSuffixHash: true
+
+secretGenerator:
+  - name: biblioteka-secrets
+    envs:
+      - secrets.env
+    options:
+      disableNameSuffixHash: true
+
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/part-of: biblioteka
+
+# Placement on k3s: every workload already carries
+#   nodeSelector: node-role.kubernetes.io/worker: "worker"
+# and the server node is tainted (see k8s/k3s/server-config.yaml), so pods only
+# ever land on the two agents.
+#
+# Never pin a pod to a node with kubernetes.io/hostname. k3s hostnames are the
+# lowercased machine name (desktop-xxxxxxx, not DESKTOP-XXXXXXX); a mismatch
+# gets the pod rejected by the kubelet with "Predicate NodeAffinity failed",
+# and the ReplicaSet immediately replaces it - forever, with no backoff. That
+# is what produced ~11k dead pods.
+#
+# This spreads the stack evenly across the agents instead of stacking it on
+# whichever one the scheduler scores first. The agents only have ~4 GiB each.
+patches:
+  - patch: |
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            # Every workload pod in the namespace carries an `app` label.
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: Exists
+    target:
+      group: apps
+      kind: (Deployment|StatefulSet)

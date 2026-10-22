@@ -1,0 +1,22 @@
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Build output
+target/
+build/
+
+# OS / editor lock files
+~$*
+.DS_Store
+Thumbs.db
+
+# Local environment overrides
+.env
+**/application-local.yml
+
+# Kubernetes secrets
+k8s/secrets.env

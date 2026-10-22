@@ -1,0 +1,1 @@
+(()=>{var t="biblioteka-theme";function r(){try{let e=localStorage.getItem(t);if(e==="light"||e==="dark")return e}catch{}return window.matchMedia?.("(prefers-color-scheme: dark)").matches?"dark":"light"}function a(e,o=!1){if(document.documentElement.dataset.theme=e,o)try{localStorage.setItem(t,e)}catch{}}a(r());})();

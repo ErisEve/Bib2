@@ -1,0 +1,27 @@
+# k3s agent (worker) config. On each of the two agents, install as
+#   /etc/rancher/k3s/config.yaml
+# fill in the placeholders, then: sudo systemctl restart k3s-agent
+#
+# The token is on the server in /var/lib/rancher/k3s/server/node-token.
+# Do not commit it.
+server: https://<SERVER_LAN_IP>:6443
+token: <NODE_TOKEN>
+
+# The agents run inside WSL2. With WSL's default NAT networking, the node
+# registers a 172.x address that only its own Windows host can reach. The
+# agent still reaches the server and reports Ready, but the server and the other
+# agent cannot reach it. Flannel (UDP 8472) and kubelet traffic (TCP 10250)
+# then fail, so cross-node service calls and kubectl logs/exec break.
+#
+# Fix: in %UserProfile%\.wslconfig on the Windows side, set
+#   [wsl2]
+#   networkingMode=mirrored
+# run `wsl --shutdown`, and allow inbound UDP 8472 and TCP 10250 through the
+# Windows firewall. The agent then shares the Windows machine's LAN IP.
+# Set that IP here:
+node-ip: <THIS_WINDOWS_MACHINE_LAN_IP>
+
+# Keep the node name stable and lowercase. Pods are never pinned to it by
+# name (see k8s/kustomization.yaml), but a stable name means the Node object and
+# its labels survive a WSL reinstall or hostname change.
+# node-name: desktop-xxxxxxx

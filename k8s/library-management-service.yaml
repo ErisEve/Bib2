@@ -1,0 +1,102 @@
+# Books. Also reads loan-management-service's lending table directly to derive book availability.
+apiVersion: v1
+kind: Service
+metadata:
+  name: library-management-service
+  labels:
+    app: library-management-service
+spec:
+  selector:
+    app: library-management-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: library-management-service
+  labels:
+    app: library-management-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: library-management-service
+  template:
+    metadata:
+      labels:
+        app: library-management-service
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: "worker"
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
+                echo "waiting for postgres..."
+                sleep 3
+              done
+          envFrom:
+            - configMapRef:
+                name: biblioteka-config
+        - name: wait-for-gateway
+          image: busybox:stable
+          command:
+            - sh
+            - -c
+            - |
+              until wget -q -O- http://gateway-service:8080/actuator/health/readiness | grep -q UP; do
+                echo "waiting for gateway-service..."
+                sleep 3
+              done
+      containers:
+        - name: library-management-service
+          image: biblioteka/library-service:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: biblioteka-config
+            - secretRef:
+                name: biblioteka-secrets
+          env:
+            # The app reads DB_PASSWORD; the Secret stores it once under the key
+            # postgres itself uses, so there is no duplicated value to keep in sync.
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: biblioteka-secrets
+                  key: POSTGRES_PASSWORD
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            periodSeconds: 5
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 640Mi
+              cpu: 1000m

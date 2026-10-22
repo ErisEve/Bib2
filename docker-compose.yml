@@ -1,0 +1,133 @@
+# Local verification harness for the container images.
+#
+# This is not the Kubernetes target - it exists to prove the images build, register
+# with Eureka and talk to each other over container networking before the manifests
+# are written. Only the gateway and the Eureka dashboard are published, mirroring
+# the k8s model where just the gateway gets an Ingress.
+
+x-common-env: &common-env
+  EUREKA_URL: http://eureka-server:8761/eureka/
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-36000000}
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
+
+x-db-env: &db-env
+  DB_URL: jdbc:postgresql://postgres:5432/library_metadata
+  DB_USERNAME: ${POSTGRES_USER:-postgres}
+  DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks: [biblioteka]
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    networks: [biblioteka]
+    environment:
+      POSTGRES_DB: library_metadata
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d library_metadata"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Startup order is eureka -> gateway -> everything else. Services and Feign
+  # clients target the gateway, so nothing inter-service works until both are up.
+  eureka-server:
+    <<: *service-defaults
+    build: ./eureka-discovery-server
+    image: biblioteka/eureka-server:dev
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: eureka-server
+    ports:
+      # Host port is overridable so this can run alongside an IntelliJ session
+      # that already holds 8761.
+      - "${EUREKA_PORT:-8761}:8761"
+
+  gateway-service:
+    <<: *service-defaults
+    build: ./LibGateway
+    image: biblioteka/gateway-service:dev
+    environment:
+      <<: *common-env
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+
+  user-service:
+    <<: *service-defaults
+    build: ./user-service
+    image: biblioteka/user-service:dev
+    environment:
+      <<: [*common-env, *db-env]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gateway-service:
+        condition: service_healthy
+
+  library-management-service:
+    <<: *service-defaults
+    build: ./library-management-service
+    image: biblioteka/library-service:dev
+    environment:
+      <<: [*common-env, *db-env]
+      GATEWAY_URL: http://gateway-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gateway-service:
+        condition: service_healthy
+
+  loan-management-service:
+    <<: *service-defaults
+    build: ./loan-management-service
+    image: biblioteka/loan-service:dev
+    environment:
+      <<: [*common-env, *db-env]
+      GATEWAY_URL: http://gateway-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gateway-service:
+        condition: service_healthy
+
+  # Directory is seat-reservation-service, spring.application.name is
+  # seat-management-service - the app name is what the gateway route targets.
+  seat-management-service:
+    <<: *service-defaults
+    build: ./seat-reservation-service
+    image: biblioteka/seat-service:dev
+    environment:
+      <<: [*common-env, *db-env]
+      GATEWAY_URL: http://gateway-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gateway-service:
+        condition: service_healthy
+
+  ui-service:
+    <<: *service-defaults
+    build: ./BibliotekaUI
+    image: biblioteka/ui-service:dev
+    environment:
+      <<: *common-env
+      GATEWAY_URL: http://gateway-service:8080
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+
+networks:
+  biblioteka:
+
+volumes:
+  pgdata:

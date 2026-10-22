@@ -1,0 +1,96 @@
+# Loads the test data from library-db-mkfile.sql.
+#
+# This is a separate step, not part of `kubectl apply -k k8s/`, because of the
+# bootstrap order the README describes: the dump is data-only, so the tables it
+# inserts into do not exist until Hibernate (ddl-auto: update) has created them,
+# which only happens once the services have started.
+#
+# Requires the ConfigMap built from the dump:
+#   kubectl -n biblioteka create configmap db-seed --from-file=library-db-mkfile.sql
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-seed
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        # Waits for the schema rather than for the pods. `select 1 from <t> limit 1`
+        # succeeds on an empty table and fails while the relation is missing, which
+        # is exactly the condition we care about.
+        - name: wait-for-schema
+          image: postgres:17
+          command:
+            - sh
+            - -c
+            - |
+              until psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc \
+                    'select 1 from users limit 1; select 1 from books limit 1; select 1 from seats limit 1; select 1 from lending limit 1' \
+                    >/dev/null 2>&1; do
+                echo "waiting for Hibernate to create the tables..."
+                sleep 5
+              done
+              echo "schema is present"
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: biblioteka-secrets
+                  key: POSTGRES_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: biblioteka-config
+      containers:
+        - name: seed
+          image: postgres:17
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              count=$(psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc 'select count(*) from books')
+              if [ "$count" != "0" ]; then
+                echo "books already has $count rows - nothing to do"
+                exit 0
+              fi
+
+              # The dump is psql output, not portable SQL. Strip the meta-commands
+              # (\restrict, \unrestrict, \connect) and the database-level statements,
+              # which would otherwise try to drop and recreate the database the
+              # postgres entrypoint already made. What is left is the 75 INSERTs and
+              # the four setval() calls.
+              #
+              # Do not reorder the result: lending is loaded last on purpose, because
+              # its foreign keys reference users(id) and books(id).
+              sed -e '/^\\/d' \
+                  -e '/^DROP DATABASE/d' \
+                  -e '/^CREATE DATABASE/d' \
+                  -e '/^ALTER DATABASE/d' \
+                  /seed/library-db-mkfile.sql > /tmp/seed.sql
+
+              psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+                   -v ON_ERROR_STOP=1 -f /tmp/seed.sql
+              echo "seeded:"
+              psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
+                "select 'books' t, count(*) from books
+                 union all select 'users', count(*) from users
+                 union all select 'seats', count(*) from seats
+                 union all select 'lending', count(*) from lending"
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: biblioteka-secrets
+                  key: POSTGRES_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: biblioteka-config
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+      volumes:
+        - name: seed
+          configMap:
+            name: db-seed
