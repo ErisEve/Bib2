@@ -58,7 +58,7 @@ spec:
       containers:
         - name: loan-management-service
           image: biblioteka/loan-service:dev
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8083

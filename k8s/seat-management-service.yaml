@@ -59,7 +59,7 @@ spec:
       containers:
         - name: seat-management-service
           image: biblioteka/seat-service:dev
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8084

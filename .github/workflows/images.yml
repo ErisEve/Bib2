@@ -1,0 +1,89 @@
+# Builds the seven service images and publishes them to GHCR as
+# ghcr.io/<owner>/biblioteka/<image>. The k3s manifests pull these (see the
+# `images:` block in k8s/kustomization.yaml).
+#
+#   push to main  -> :main, :sha-<short>
+#   tag v1.2.3    -> :1.2.3, :1.2, :latest, :sha-<short>
+#   pull request  -> built, not pushed
+name: images
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Every image is rebuilt on every run (no path filters) so all seven always
+      # carry the same tags - kustomize points every deployment at one tag.
+      # Image names follow docker-compose.yml, not the directory names.
+      matrix:
+        include:
+          - context: eureka-discovery-server
+            image: eureka-server
+          - context: LibGateway
+            image: gateway-service
+          - context: user-service
+            image: user-service
+          - context: library-management-service
+            image: library-service
+          - context: loan-management-service
+            image: loan-service
+          - context: seat-reservation-service
+            image: seat-service
+          - context: BibliotekaUI
+            image: ui-service
+    steps:
+      - uses: actions/checkout@v4
+
+      # GHCR repository names must be lowercase; the owner is not.
+      - name: Lowercase owner
+        id: owner
+        run: echo "name=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.owner.outputs.name }}/biblioteka/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # The cluster nodes are x86_64, so no multi-arch build.
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.context }}
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max

@@ -37,7 +37,7 @@ spec:
           image: biblioteka/eureka-server:dev
           # The image only ever exists in the node's local store - it is loaded
           # with `kind load docker-image`, never pulled from a registry.
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8761

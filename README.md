@@ -118,6 +118,8 @@ kind load docker-image --name biblioteka \
   biblioteka/ui-service:dev postgres:17 busybox:stable
 ```
 
+> **Note:** `k8s/kustomization.yaml` now points the deployments at the GHCR images with `imagePullPolicy: Always` (see [Running on k3s](#running-on-k3s-one-server-two-agents)), so a kind cluster with internet access pulls them itself and ignores locally loaded `:dev` images. To run your own local builds on kind, remove the `images:` block and set the pull policy back to `IfNotPresent`.
+
 `postgres:17` and `busybox:stable` are in the list because the manifests use them for the database and for the small "wait until my dependency is up" containers; loading them saves the cluster from pulling them again.
 
 ### 5. Fill in the secrets
@@ -207,13 +209,23 @@ kubectl label node <agent-1> <agent-2> node-role.kubernetes.io/worker=worker --o
 
 k3s agents cannot set a `node-role.kubernetes.io/*` label on themselves, which is why this step is manual.
 
-**Images** — the `:dev` images are never pulled from a registry, so each agent needs its own copy:
+**Images** — the seven service images are built by GitHub Actions (`.github/workflows/images.yml`) and published to GHCR as `ghcr.io/eriseve/biblioteka/<name>`. The manifests still say `biblioteka/<name>:dev`; the `images:` block in `k8s/kustomization.yaml` rewrites them to the GHCR names, and the containers use `imagePullPolicy: Always`, so the agents pull straight from the registry.
+
+| Event | Tags |
+| --- | --- |
+| push to `main` | `main`, `sha-<short>` |
+| git tag `v1.2.3` | `1.2.3`, `1.2`, `latest`, `sha-<short>` |
+| pull request | built, not pushed |
+
+The cluster tracks `main` by default. After a new build finishes, `kubectl -n biblioteka rollout restart deploy` picks it up. To pin a release, cut a tag (`git tag v1.0.0 && git push origin v1.0.0`) and set every `newTag` in `k8s/kustomization.yaml` to `1.0.0`.
+
+New GHCR packages start out private. After the first workflow run, set each of the seven packages to **Public** (package page → Package settings → Change visibility), otherwise the agents get `ImagePullBackOff`.
+
+Without registry access, you can still copy locally built images onto each agent under the GHCR names, and temporarily switch the deployments back to `imagePullPolicy: IfNotPresent`:
 
 ```bash
-docker save biblioteka/eureka-server:dev biblioteka/gateway-service:dev \
-  biblioteka/user-service:dev biblioteka/library-service:dev \
-  biblioteka/loan-service:dev biblioteka/seat-service:dev \
-  biblioteka/ui-service:dev | ssh <agent> sudo k3s ctr images import -
+docker tag biblioteka/user-service:dev ghcr.io/eriseve/biblioteka/user-service:main   # repeat per image
+docker save ghcr.io/eriseve/biblioteka/user-service:main | ssh <agent> sudo k3s ctr images import -
 ```
 
 Then deploy and seed the database exactly as in steps 5–7 above. `kubectl -n biblioteka get pods -o wide` should show every pod on one of the two agents.

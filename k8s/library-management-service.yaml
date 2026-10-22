@@ -58,7 +58,7 @@ spec:
       containers:
         - name: library-management-service
           image: biblioteka/library-service:dev
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8081

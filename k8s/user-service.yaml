@@ -58,7 +58,7 @@ spec:
       containers:
         - name: user-service
           image: biblioteka/user-service:dev
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8082

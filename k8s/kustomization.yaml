@@ -29,6 +29,34 @@ secretGenerator:
     options:
       disableNameSuffixHash: true
 
+# The manifests name the images biblioteka/<name>:dev (the docker-compose tags);
+# this retargets them to the GHCR images published by
+# .github/workflows/images.yml. `main` follows the main branch - the containers
+# use imagePullPolicy: Always, so `kubectl rollout restart` picks up a new
+# build. To pin a release, set newTag to a version (1.2.3) or sha-<short>.
+images:
+  - name: biblioteka/eureka-server
+    newName: ghcr.io/eriseve/biblioteka/eureka-server
+    newTag: main
+  - name: biblioteka/gateway-service
+    newName: ghcr.io/eriseve/biblioteka/gateway-service
+    newTag: main
+  - name: biblioteka/user-service
+    newName: ghcr.io/eriseve/biblioteka/user-service
+    newTag: main
+  - name: biblioteka/library-service
+    newName: ghcr.io/eriseve/biblioteka/library-service
+    newTag: main
+  - name: biblioteka/loan-service
+    newName: ghcr.io/eriseve/biblioteka/loan-service
+    newTag: main
+  - name: biblioteka/seat-service
+    newName: ghcr.io/eriseve/biblioteka/seat-service
+    newTag: main
+  - name: biblioteka/ui-service
+    newName: ghcr.io/eriseve/biblioteka/ui-service
+    newTag: main
+
 labels:
   - includeSelectors: false
     pairs:

@@ -47,7 +47,7 @@ spec:
       containers:
         - name: ui-service
           image: biblioteka/ui-service:dev
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8017
