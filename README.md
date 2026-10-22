@@ -61,7 +61,7 @@ The `sed` is there because the dump is `psql` output rather than portable SQL: i
 Use `docker compose stop` to pause the stack and `docker compose down -v` to remove it along with its database volume.
 
 ## Running on Kubernetes (kind)
-This is the deployment target the Docker work was building towards. Everything needed lives in the `k8s/` directory, and the whole thing runs locally inside WSL2 — no cloud account, no registry.
+This is the local development cluster: a single-machine Kubernetes that runs inside WSL2, with no cloud account and no registry. Everything needed lives in the `k8s/` directory. The production-like deployment is the multi-node k3s cluster described in [Running on k3s](#running-on-k3s-one-server-two-agents), which uses the same manifests.
 
 The cluster is [kind](https://kind.sigs.k8s.io/), which runs Kubernetes nodes as Docker containers on the Docker daemon you already have. The manifests are plain YAML tied together with Kustomize, which is built into `kubectl`, so there is nothing else to install.
 
@@ -181,7 +181,9 @@ kind delete cluster --name biblioteka
 - **`too many open files` during cluster creation.** WSL's inotify limits are too low for kind. Raise them with `sudo sysctl fs.inotify.max_user_instances=512`.
 
 ## Running on k3s (one server, two agents)
-The same `k8s/` manifests also run on a multi-node k3s cluster. The server machine runs only the control plane and the k3s add-ons. All eight Biblioteka pods run on the two agents, which here are WSL2 machines.
+The same `k8s/` manifests also run on a multi-node k3s cluster. The server machine runs only the control plane and the k3s add-ons. All eight Biblioteka pods run on the two agents.
+
+This is the production setup. It currently runs on three dedicated Ubuntu machines (`kube01` as the server, `kube02` and `kube03` as agents). WSL2 is used only for development (see the kind section above), but a WSL2 machine can still join as an agent if it has to; the WSL-specific steps below apply only in that case.
 
 Three rules keep the workloads off the server and out of trouble:
 - The server is tainted `CriticalAddonsOnly=true:NoExecute`, so only k3s's own add-ons run there.
@@ -197,7 +199,7 @@ kubectl taint nodes "$(hostname)" CriticalAddonsOnly=true:NoExecute --overwrite 
 kubectl apply -f k8s/k3s/traefik-config.yaml
 ```
 
-**Agents** — first switch WSL to mirrored networking. Otherwise the agents register unreachable NAT addresses and traffic between nodes silently fails; `k8s/k3s/agent-config.yaml` explains the details. Then fill in that file, install it as `/etc/rancher/k3s/config.yaml` on each agent, and restart `k3s-agent`. From the server, label both agents:
+**Agents** — if an agent runs inside WSL2, first switch WSL to mirrored networking. Otherwise it registers an unreachable NAT address and traffic between nodes silently fails; `k8s/k3s/agent-config.yaml` explains the details. Native Linux agents skip this. Then fill in that file, install it as `/etc/rancher/k3s/config.yaml` on each agent, and restart `k3s-agent`. From the server, label both agents:
 
 ```bash
 kubectl label node <agent-1> <agent-2> node-role.kubernetes.io/worker=worker --overwrite
