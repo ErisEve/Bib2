@@ -28,4 +28,17 @@ class SeatManagerApplicationTests {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).containsEntry("status", "UP");
     }
+
+    // The Kubernetes readiness probe must take the pod out of the Service when the database is
+    // unreachable; the liveness probe must not, or a database outage would restart every pod.
+    @Test
+    void readinessChecksTheDatabaseAndLivenessDoesNot() {
+        ResponseEntity<Map> readiness = restTemplate.getForEntity("/actuator/health/readiness", Map.class);
+        ResponseEntity<Map> liveness = restTemplate.getForEntity("/actuator/health/liveness", Map.class);
+
+        assertThat(readiness.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) readiness.getBody().get("components")).containsKeys("db", "readinessState");
+        assertThat(liveness.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) liveness.getBody().get("components")).containsOnlyKeys("livenessState");
+    }
 }

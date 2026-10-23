@@ -31,6 +31,8 @@ spec:
       labels:
         app: gateway-service
     spec:
+      # preStop sleep (10 s) + Spring's graceful shutdown (at most 20 s) + margin.
+      terminationGracePeriodSeconds: 45
       nodeSelector:
         node-role.kubernetes.io/worker: "worker"
       containers:
@@ -45,23 +47,33 @@ spec:
                 name: biblioteka-config
             - secretRef:
                 name: biblioteka-secrets
+          lifecycle:
+            # Keep serving for a while after the pod is marked terminating: it
+            # takes a few seconds until kube-proxy and Traefik stop sending it
+            # new connections. Spring's graceful shutdown starts after this.
+            preStop:
+              sleep:
+                seconds: 10
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
             periodSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 40
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
             periodSeconds: 10
+            timeoutSeconds: 3
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
               port: 8080
             periodSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 3
           resources:
             requests:

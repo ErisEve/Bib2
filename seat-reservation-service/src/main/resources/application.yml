@@ -1,7 +1,13 @@
 server:
     port: 8084
+    # On SIGTERM, stop accepting connections and let in-flight requests finish
+    # (up to spring.lifecycle.timeout-per-shutdown-phase) before the context closes.
+    shutdown: graceful
 
 spring:
+    # Must fit in terminationGracePeriodSeconds (45 s) after the 10 s preStop sleep.
+    lifecycle:
+        timeout-per-shutdown-phase: 20s
     application:
         name: seat-management-service
     datasource:
@@ -30,6 +36,14 @@ management:
         health:
             probes:
                 enabled: true
+            # Readiness includes the database: a pod that cannot reach PostgreSQL
+            # is taken out of the Service instead of answering with errors.
+            # Liveness stays local - an unreachable database must not restart pods.
+            group:
+                readiness:
+                    include: readinessState,db
+                liveness:
+                    include: livenessState
             show-details: always
             show-components: always
         info:
