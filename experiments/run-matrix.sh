@@ -15,7 +15,8 @@
 # The first run records the deployed commit in results/<label>/COMMIT; later
 # runs refuse to start if a different commit is deployed.
 #
-# Environment: REPS (3), plus everything run.sh and reset.sh read (RATE!).
+# Environment: REPS (3), EXTRA_CELLS, ONLY_EXTRA, plus everything run.sh and
+# reset.sh read (RATE!).
 set -euo pipefail
 
 label=${1:?usage: $0 <label>}
@@ -33,6 +34,12 @@ cells=(
   "crash gateway-service"
   "drain"
 )
+# Extra cells, e.g. EXTRA_CELLS="kill1 gateway-service;crash1 gateway-service":
+# run after (or instead of, with ONLY_EXTRA=1) the standard matrix.
+if [[ -n ${EXTRA_CELLS:-} ]]; then
+  IFS=';' read -r -a extra <<< "$EXTRA_CELLS"
+  if [[ -n ${ONLY_EXTRA:-} ]]; then cells=("${extra[@]}"); else cells+=("${extra[@]}"); fi
+fi
 
 done_runs() { find "$results/$1" -mindepth 2 -maxdepth 2 -name DONE 2>/dev/null | wc -l; }
 

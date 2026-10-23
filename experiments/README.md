@@ -42,6 +42,21 @@ The matrix is `steady`, `update`, `kill` of gateway, user and library services,
 `crash gateway-service` and `drain`, with 3 runs each. A series takes about
 4 hours.
 
+## Choosing RATE
+
+`calibrate.sh` ramps the load against pods that are already warm. That
+overstates the capacity: every run starts right after `reset.sh` with cold
+JVMs, and `update`/`kill` put freshly started pods under load. Check the
+candidate rate from a cold start as well:
+
+```bash
+experiments/reset.sh && RATE=<r> STEADY_DURATION=5m experiments/run.sh calibration/cold-r<r> steady
+```
+
+Pick RATE at about half of the lowest rate that shows errors in either test.
+For the runs in REPORT.md: warm, p95 bent at 200/s; cold, errors appeared at
+60/s and 40/s was clean, so RATE = 30/s.
+
 ## Running a series
 
 ```bash

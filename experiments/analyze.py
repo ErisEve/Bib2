@@ -28,6 +28,8 @@ Definitions (times in seconds relative to the `start` event of events.log):
     recovery: end of the last second with a non-200 at or after `start`, i.e.
       from then on every second is 100 % successful (0 when no error followed
       `start`);
+    errors after ready (kill/crash): recovery minus the time the replacement
+      pod became ready, and the number of non-200 sent after that moment;
     restarts: container restarts that happened during the run (max - first
       value per pod in metrics-pods.csv).
 """
@@ -51,6 +53,9 @@ CELLS = [
     "kill-library-management-service",
     "crash-gateway-service",
     "drain",
+    "kill1-gateway-service",
+    "kill1-user-service",
+    "crash1-gateway-service",
 ]
 CLASSES = ["503", "0", "other"]
 CLASS_NAMES = {"503": "503 fallback", "0": "timeout / conn. error", "other": "other non-200"}
@@ -218,6 +223,11 @@ def analyze_run(run):
             row["drain_s"] = seconds_arg(a)
         elif n == "all-ready":
             row["drain_all_ready_s"] = seconds_arg(a)
+    # Errors that outlive the replacement pod: stale routing or an open circuit breaker.
+    if "replacement_ready_s" in row:
+        ready = row["replacement_ready_s"]
+        row["tail_after_ready_s"] = max(0.0, row["recovery_s"] - ready)
+        row["non200_after_ready"] = int(((req.sent - t0) >= ready).mul(req.cls != "ok").sum())
     if any(n == "drain-begin" for _, n, _ in events):
         row["drained_node"] = next(a.split()[0] for _, n, a in events if n == "drain-begin")
         row["services_on_drained_node"] = drained_services(run, events)
@@ -351,8 +361,8 @@ def plot_timeline(ax, ps, events, t0, title):
                 groups.append((t - t0, [MARKERS[n]]))
     for rel, names in groups:
         ax.axvline(rel, color=MUTED, linewidth=0.8, linestyle=(0, (3, 2)))
-        ax.annotate(" / ".join(names), (rel, ymax), rotation=90, va="top", ha="right", fontsize=7, color=MUTED,
-                    xytext=(-2, 0), textcoords="offset points")
+        ax.annotate(" / ".join(names), (rel, 1), xycoords=("data", "axes fraction"), rotation=90, va="top",
+                    ha="right", fontsize=7, color=MUTED, xytext=(-2, -2), textcoords="offset points")
     ax.set_ylim(0, ymax * 1.02)
     ax.set_xlim(x.min(), x.max())
     ax.set_title(title, loc="left", color=INK, fontsize=9)
@@ -401,6 +411,8 @@ METRICS = [
     ("rollout_s", "rollout s", 1),
     ("replacement_ready_s", "new pod ready s", 1),
     ("old_pod_gone_s", "old pod gone s", 1),
+    ("tail_after_ready_s", "errors after ready s", 1),
+    ("non200_after_ready", "non-200 after ready", 1),
     ("drain_s", "drain s", 1),
     ("restarts", "restarts", 1),
 ]
@@ -459,9 +471,9 @@ def analyze_label(label):
         plot_timeline(ax, ps, events, first(events, "start"), f"{label} · {cell} · run {row['run']} "
                       f"({row['non200']} non-200 of {row['requests']})")
         ax.set_xlabel("seconds since start (request send time)")
+        fig.tight_layout(rect=(0, 0.08, 1, 1))
         if any(ps[c].sum() for c in CLASSES):
-            ax.legend(loc="upper left", fontsize=8)
-        fig.tight_layout()
+            fig.legend(*ax.get_legend_handles_labels(), loc="lower center", fontsize=8, ncol=3)
         fig.savefig(plots / f"timeline-{cell}.png")
         plt.close(fig)
 
@@ -533,11 +545,11 @@ def compare(results):
                 if n not in names:
                     handles.append(h)
                     names.append(n)
-        if handles:
-            fig.legend(handles, names, loc="upper right", fontsize=8, ncol=3)
         axes[-1, 0].set_xlabel("seconds since start (request send time)")
         fig.suptitle(f"{cell}: non-200 responses per second, representative run", x=0.01, ha="left", color=INK)
-        fig.tight_layout()
+        fig.tight_layout(rect=(0, 0.06, 1, 1))
+        if handles:
+            fig.legend(handles, names, loc="lower center", fontsize=8, ncol=3)
         fig.savefig(out / f"timeline-{cell}.png")
         plt.close(fig)
 

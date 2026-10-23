@@ -6,8 +6,12 @@
 #   steady            no disruption (STEADY_DURATION, 10m)
 #   update            kubectl rollout restart of every app Deployment at once -
 #                     what a CI deploy does, since every push retags all six images
-#   kill  <service>   kubectl delete pod -l app=<service> (graceful)
+#   kill  <service>   kubectl delete pod -l app=<service> (graceful) - every pod
+#                     of the service, so with two replicas both go at once
 #   crash <service>   the same with --grace-period=0 --force
+#   kill1 / crash1 <service>
+#                     the same, but only one pod (the first by name); identical
+#                     to kill/crash for a single-replica service
 #   drain             drain the worker that does NOT run postgres-0, wait 60 s,
 #                     uncordon
 #
@@ -26,12 +30,12 @@
 # WARMUP (90), STEADY_DURATION (10m), DISRUPT_DURATION (6m), NAMESPACE, K6 (k6).
 set -euo pipefail
 
-usage() { echo "usage: $0 <label> <steady|update|kill|crash|drain> [service]" >&2; exit 2; }
+usage() { echo "usage: $0 <label> <steady|update|kill|crash|kill1|crash1|drain> [service]" >&2; exit 2; }
 label=${1:-}; scenario=${2:-}; service=${3:-}
 [[ -n $label ]] || usage
 case $scenario in
   steady | update | drain) [[ -z $service ]] || usage ;;
-  kill | crash) [[ -n $service ]] || usage ;;
+  kill | crash | kill1 | crash1) [[ -n $service ]] || usage ;;
   *) usage ;;
 esac
 
@@ -140,11 +144,12 @@ disrupt() {
       log "rollout-duration $(since "$t0")s"
       return $rc
       ;;
-    kill | crash)
-      local -a force=()
-      [[ $scenario == crash ]] && force=(--grace-period=0 --force)
+    kill | crash | kill1 | crash1)
+      local -a force=() pods=(-l app="$service")
+      [[ $scenario == crash* ]] && force=(--grace-period=0 --force)
+      [[ $scenario == *1 ]] && pods=("$(kc get pod -l app="$service" -o name | sort | head -1)")
       t0=$(epoch)
-      kc delete pod -l app="$service" --wait=false "${force[@]}"
+      kc delete pod "${pods[@]}" --wait=false "${force[@]}"
       log "deleted $service"
       wait_replaced "$service" "$t0"
       ;;
