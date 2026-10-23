@@ -23,6 +23,8 @@ Definitions (times in seconds relative to the `start` event of events.log):
       when it completes, so send = timestamp - duration);
     non-200 classes: 503 (gateway fallback), 0 (timeout or connection error),
       other;
+    p95/p99 after start: latency of the reads sent after `start`, without the
+      cold warm-up that follows reset.sh;
     longest error window: longest run of consecutive seconds that each contain
       at least one non-200, anywhere in the run;
     recovery: end of the last second with a non-200 at or after `start`, i.e.
@@ -210,6 +212,9 @@ def analyze_run(run):
         "p99_ms": reads.ms.quantile(0.99),
         "max_ms": reads.ms.max(),
         "login_p95_ms": logins.ms.quantile(0.95),
+        # Latency of the reads sent after `start` only, i.e. without the cold warm-up.
+        "warm_p95_ms": reads[reads.sent >= t0].ms.quantile(0.95),
+        "warm_p99_ms": reads[reads.sent >= t0].ms.quantile(0.99),
         "restarts": pod_restarts(run),
     }
     for t, n, a in events:
@@ -408,6 +413,8 @@ METRICS = [
     ("p95_ms", "p95 ms", 0),
     ("p99_ms", "p99 ms", 0),
     ("max_ms", "max ms", 0),
+    ("warm_p95_ms", "p95 after start ms", 0),
+    ("warm_p99_ms", "p99 after start ms", 0),
     ("rollout_s", "rollout s", 1),
     ("replacement_ready_s", "new pod ready s", 1),
     ("old_pod_gone_s", "old pod gone s", 1),

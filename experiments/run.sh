@@ -147,9 +147,11 @@ disrupt() {
     kill | crash | kill1 | crash1)
       local -a force=() pods=(-l app="$service")
       [[ $scenario == crash* ]] && force=(--grace-period=0 --force)
-      [[ $scenario == *1 ]] && pods=("$(kc get pod -l app="$service" -o name | sort | head -1)")
+      if [[ $scenario == *1 ]]; then
+        pods=("$(kc get pod -l app="$service" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | sort | head -1)")
+      fi
       t0=$(epoch)
-      kc delete pod "${pods[@]}" --wait=false "${force[@]}"
+      kc delete pod "${pods[@]}" --wait=false "${force[@]}" || return 1
       log "deleted $service"
       wait_replaced "$service" "$t0"
       ;;
