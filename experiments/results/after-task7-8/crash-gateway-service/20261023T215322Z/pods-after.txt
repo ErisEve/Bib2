@@ -1,0 +1,10 @@
+NAME                                          READY   STATUS    RESTARTS   AGE     IP            NODE     NOMINATED NODE   READINESS GATES
+gateway-service-6fc686fcdc-b5sc4              1/1     Running   0          4m37s   10.42.1.74    kube03   <none>           <none>
+gateway-service-6fc686fcdc-kn8rl              1/1     Running   0          4m37s   10.42.2.253   kube02   <none>           <none>
+library-management-service-7b757d69dc-wk264   1/1     Running   0          8m46s   10.42.1.71    kube03   <none>           <none>
+loan-management-service-d796b68f8-rfgx2       1/1     Running   0          8m46s   10.42.2.248   kube02   <none>           <none>
+postgres-0                                    1/1     Running   0          62m     10.42.2.221   kube02   <none>           <none>
+seat-management-service-86b7458f6c-scws4      1/1     Running   0          8m46s   10.42.2.250   kube02   <none>           <none>
+ui-service-75c8ffd564-cc99z                   1/1     Running   0          8m45s   10.42.2.251   kube02   <none>           <none>
+user-service-54cc464d8f-tg5q8                 1/1     Running   0          8m19s   10.42.1.73    kube03   <none>           <none>
+user-service-54cc464d8f-z4rhs                 1/1     Running   0          8m45s   10.42.1.72    kube03   <none>           <none>

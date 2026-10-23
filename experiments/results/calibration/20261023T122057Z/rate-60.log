@@ -1,0 +1,56 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=98.33ms
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=80.63ms
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=75.92ms
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=577.79ms
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=98.33ms
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=100.00%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 100.00% 7322 out of 7322
+      { scenario:logins }............: 100.00% 121 out of 121
+      { scenario:reads }.............: 100.00% 7201 out of 7201
+
+    HTTP
+    http_req_duration................: avg=21.19ms  p(50)=15.11ms  p(95)=28.7ms   p(99)=304.68ms max=577.79ms count=7323
+      { expected_response:true }.....: avg=21.19ms  p(50)=15.11ms  p(95)=28.7ms   p(99)=304.68ms max=577.79ms count=7323
+      { name:/api/books/booksAll }...: avg=17.01ms  p(50)=15.69ms  p(95)=27.18ms  p(99)=44.41ms  max=98.33ms  count=2401
+      { name:/api/lendings }.........: avg=15.74ms  p(50)=14.65ms  p(95)=21.75ms  p(99)=56.12ms  max=80.63ms  count=2400
+      { name:/api/seats }............: avg=15.67ms  p(50)=15.21ms  p(95)=24.59ms  p(99)=41ms     max=75.92ms  count=2400
+      { scenario:logins }............: avg=319.51ms p(50)=309.09ms p(95)=422.67ms p(99)=536.87ms max=577.79ms count=121 
+      { scenario:reads }.............: avg=16.14ms  p(50)=15.04ms  p(95)=24.92ms  p(99)=44.99ms  max=98.33ms  count=7201
+    http_req_failed..................: 0.00%   0 out of 7323
+    http_reqs........................: 7323    60.740672/s
+
+    EXECUTION
+    iteration_duration...............: avg=21.28ms  p(50)=15.23ms  p(95)=28.78ms  p(99)=304.78ms max=577.91ms count=7322
+    iterations.......................: 7322    60.732377/s
+    vus..............................: 1       min=0            max=3 
+    vus_max..........................: 62      min=62           max=62
+
+    NETWORK
+    data_received....................: 38 MB   316 kB/s
+    data_sent........................: 2.1 MB  17 kB/s
+
+
+

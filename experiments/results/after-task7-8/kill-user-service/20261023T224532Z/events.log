@@ -1,0 +1,8 @@
+2026-10-23T22:45:33.203Z sampler-start
+2026-10-23T22:46:03.210Z k6-launch rate=30 duration=6m
+2026-10-23T22:47:33.217Z start kill user-service
+2026-10-23T22:47:33.456Z deleted user-service
+2026-10-23T22:47:49.776Z terminated user-service 16.5s
+2026-10-23T22:48:15.552Z ready user-service 42.3s
+2026-10-23T22:48:15.556Z end rc=0
+2026-10-23T22:52:04.860Z k6-exit rc=0

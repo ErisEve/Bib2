@@ -1,0 +1,10 @@
+NAME                                         READY   STATUS      RESTARTS   AGE     IP           NODE     NOMINATED NODE   READINESS GATES
+db-seed-xndns                                0/1     Completed   0          41h     10.42.1.11   kube03   <none>           <none>
+eureka-server-78668d7797-jqk28               1/1     Running     0          9m30s   10.42.1.94   kube03   <none>           <none>
+gateway-service-565794d5cf-dfgkd             1/1     Running     0          9m30s   10.42.2.74   kube02   <none>           <none>
+library-management-service-84f7bb98c-kc56p   1/1     Running     0          9m30s   10.42.1.95   kube03   <none>           <none>
+loan-management-service-6f67b648fd-sxxfr     1/1     Running     0          9m29s   10.42.2.75   kube02   <none>           <none>
+postgres-0                                   1/1     Running     0          41h     10.42.2.9    kube02   <none>           <none>
+seat-management-service-84f8d45759-nwr4g     1/1     Running     0          9m29s   10.42.1.96   kube03   <none>           <none>
+ui-service-69cd9f8758-g8k4f                  1/1     Running     0          9m29s   10.42.2.76   kube02   <none>           <none>
+user-service-74967bf4f9-svjhm                1/1     Running     0          4m36s   10.42.1.98   kube03   <none>           <none>

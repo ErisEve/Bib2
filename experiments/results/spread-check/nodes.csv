@@ -1,0 +1,4 @@
+node,node_median_mi,node_max_mi,app_pods_median_mi,app_pods_max_mi
+kube01,1666.0,1670,0.0,0.0
+kube02,1411.0,1426,774.0,792.0
+kube03,1640.0,1656,1079.0,1103.0

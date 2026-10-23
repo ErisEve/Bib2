@@ -1,0 +1,12 @@
+2026-10-23T18:42:49.730Z sampler-start
+2026-10-23T18:43:19.740Z k6-launch rate=30 duration=6m
+2026-10-23T18:44:49.751Z start update 
+2026-10-23T18:45:45.786Z rollout-done ui-service 56.0s
+2026-10-23T18:45:45.930Z rollout-done gateway-service 56.2s
+2026-10-23T18:46:15.643Z rollout-done library-management-service 85.9s
+2026-10-23T18:46:15.680Z rollout-done loan-management-service 85.9s
+2026-10-23T18:46:15.700Z rollout-done seat-management-service 85.9s
+2026-10-23T18:46:16.285Z rollout-done user-service 86.3s
+2026-10-23T18:46:16.373Z rollout-duration 86.3s
+2026-10-23T18:46:16.410Z end rc=0
+2026-10-23T18:49:20.656Z k6-exit rc=0

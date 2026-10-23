@@ -1,0 +1,65 @@
+time="2026-10-23T19:10:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:35Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:35Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T19:10:35Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=671.39ms
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=668.93ms
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=2.62s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=10s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=100.00%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=97.00%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 97.09%  10837 out of 11161
+      { scenario:logins }............: 100.00% 360 out of 360
+      { scenario:reads }.............: 97.00%  10477 out of 10801
+
+    HTTP
+    http_req_duration................: avg=54.47ms  p(50)=19.48ms  p(95)=281.74ms p(99)=479.75ms max=10s      count=11162
+      { expected_response:true }.....: avg=48.54ms  p(50)=19.71ms  p(95)=286.54ms p(99)=467.41ms max=2.62s    count=10838
+      { name:/api/books/booksAll }...: avg=61.71ms  p(50)=19.2ms   p(95)=138.35ms p(99)=594.4ms  max=10s      count=3601 
+      { name:/api/lendings }.........: avg=35.73ms  p(50)=19.1ms   p(95)=117.87ms p(99)=371.77ms max=671.39ms count=3600 
+      { name:/api/seats }............: avg=31.48ms  p(50)=19.33ms  p(95)=86.41ms  p(99)=271.95ms max=668.93ms count=3600 
+      { scenario:logins }............: avg=398.49ms p(50)=327.32ms p(95)=678.81ms p(99)=1.48s    max=2.62s    count=360  
+      { scenario:reads }.............: avg=42.98ms  p(50)=19.2ms   p(95)=109.68ms p(99)=385.37ms max=10s      count=10801
+    http_req_failed..................: 2.90%   324 out of 11162
+    http_reqs........................: 11162   30.950999/s
+
+    EXECUTION
+    dropped_iterations...............: 1       0.002773/s
+    iteration_duration...............: avg=54.58ms  p(50)=19.6ms   p(95)=281.12ms p(99)=480ms    max=10s      count=11161
+    iterations.......................: 11161   30.948226/s
+    vus..............................: 1       min=0              max=17
+    vus_max..........................: 33      min=32             max=33
+
+    NETWORK
+    data_received....................: 55 MB   152 kB/s
+    data_sent........................: 3.2 MB  8.8 kB/s
+
+
+

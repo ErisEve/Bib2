@@ -1,0 +1,8 @@
+2026-10-23T22:36:06.750Z sampler-start
+2026-10-23T22:36:36.759Z k6-launch rate=30 duration=6m
+2026-10-23T22:38:06.769Z start kill gateway-service
+2026-10-23T22:38:06.947Z deleted gateway-service
+2026-10-23T22:38:28.272Z terminated gateway-service 21.5s
+2026-10-23T22:38:33.267Z ready gateway-service 26.5s
+2026-10-23T22:38:33.271Z end rc=0
+2026-10-23T22:42:38.373Z k6-exit rc=0

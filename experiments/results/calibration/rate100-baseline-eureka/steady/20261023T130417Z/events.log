@@ -1,0 +1,5 @@
+2026-10-23T13:04:18.408Z sampler-start
+2026-10-23T13:04:48.416Z k6-launch rate=100 duration=10m
+2026-10-23T13:06:18.424Z start steady 
+2026-10-23T13:06:18.432Z end rc=0
+2026-10-23T13:14:49.157Z k6-exit rc=0

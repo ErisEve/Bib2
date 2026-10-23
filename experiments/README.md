@@ -36,10 +36,11 @@ Scenarios (`run.sh`):
 | `update` | `kubectl rollout restart` of every app Deployment at once (a CI deploy retags all six images) |
 | `kill <service>` | `kubectl delete pod -l app=<service>` |
 | `crash <service>` | the same with `--grace-period=0 --force` |
+| `kill1 <service>`, `crash1 <service>` | the same, but only one pod of the service (for a replicated service, `kill` takes down every replica at once) |
 | `drain` | `kubectl drain` of the worker that does **not** run `postgres-0`, 60 s, uncordon |
 
 The matrix is `steady`, `update`, `kill` of gateway, user and library services,
-`crash gateway-service` and `drain`, with 3 runs each. A series takes about
+`crash gateway-service` and `drain`, with 3 runs each. Add cells outside the matrix with `EXTRA_CELLS="kill1 gateway-service;kill1 user-service"` (and `ONLY_EXTRA=1` to run only those). A series takes about
 4 hours.
 
 ## Choosing RATE

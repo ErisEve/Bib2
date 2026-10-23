@@ -1,0 +1,9 @@
+NAME                                          READY   STATUS    RESTARTS   AGE     IP            NODE     NOMINATED NODE   READINESS GATES
+eureka-server-5bdffb4d6b-9svs7                1/1     Running   0          4m36s   10.42.1.158   kube03   <none>           <none>
+gateway-service-867c6b94b-rrnn5               1/1     Running   0          4m36s   10.42.1.157   kube03   <none>           <none>
+library-management-service-68f5b9f6b4-mjtdk   1/1     Running   0          4m35s   10.42.1.159   kube03   <none>           <none>
+loan-management-service-85cc9f999c-jgd5b      1/1     Running   0          4m35s   10.42.1.160   kube03   <none>           <none>
+postgres-0                                    1/1     Running   0          43h     10.42.2.9     kube02   <none>           <none>
+seat-management-service-6477cc654d-64gqk      1/1     Running   0          4m35s   10.42.1.161   kube03   <none>           <none>
+ui-service-84677cf55c-zqc6w                   1/1     Running   0          4m35s   10.42.1.162   kube03   <none>           <none>
+user-service-5ffb65bc54-p55rq                 1/1     Running   0          4m35s   10.42.1.163   kube03   <none>           <none>

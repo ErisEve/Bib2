@@ -1,0 +1,59 @@
+time="2026-10-23T14:35:06Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T14:35:06Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T14:35:06Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=418.68ms
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=614.12ms
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=1.66s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=10s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=100.00%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=93.25%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 93.47%  10434 out of 11162
+      { scenario:logins }............: 100.00% 361 out of 361
+      { scenario:reads }.............: 93.25%  10073 out of 10801
+
+    HTTP
+    http_req_duration................: avg=42.08ms  p(50)=22.05ms p(95)=80.12ms  p(99)=363.09ms max=10s      count=11163
+      { expected_response:true }.....: avg=38.61ms  p(50)=22.5ms  p(95)=85.62ms  p(99)=358.41ms max=1.66s    count=10435
+      { name:/api/books/booksAll }...: avg=43.66ms  p(50)=22.27ms p(95)=54.43ms  p(99)=154.12ms max=10s      count=3601 
+      { name:/api/lendings }.........: avg=27.13ms  p(50)=23.68ms p(95)=42.04ms  p(99)=92.63ms  max=418.68ms count=3600 
+      { name:/api/seats }............: avg=23.46ms  p(50)=18.13ms p(95)=40.97ms  p(99)=105.38ms max=614.12ms count=3600 
+      { scenario:logins }............: avg=360.15ms p(50)=325.9ms p(95)=509.89ms p(99)=856.89ms max=1.66s    count=361  
+      { scenario:reads }.............: avg=31.42ms  p(50)=21.83ms p(95)=48.24ms  p(99)=114.04ms max=10s      count=10801
+    http_req_failed..................: 6.52%   728 out of 11163
+    http_reqs........................: 11163   30.951507/s
+
+    EXECUTION
+    iteration_duration...............: avg=42.19ms  p(50)=22.18ms p(95)=79.33ms  p(99)=363.24ms max=10s      count=11162
+    iterations.......................: 11162   30.948735/s
+    vus..............................: 1       min=0              max=11
+    vus_max..........................: 32      min=32             max=32
+
+    NETWORK
+    data_received....................: 52 MB   143 kB/s
+    data_sent........................: 3.2 MB  8.8 kB/s
+
+
+

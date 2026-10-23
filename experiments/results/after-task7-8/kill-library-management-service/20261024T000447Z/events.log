@@ -1,0 +1,8 @@
+2026-10-24T00:04:48.494Z sampler-start
+2026-10-24T00:05:18.504Z k6-launch rate=30 duration=6m
+2026-10-24T00:06:48.515Z start kill library-management-service
+2026-10-24T00:06:48.719Z deleted library-management-service
+2026-10-24T00:06:59.867Z terminated library-management-service 11.3s
+2026-10-24T00:07:15.625Z ready library-management-service 27.1s
+2026-10-24T00:07:15.629Z end rc=0
+2026-10-24T00:11:19.429Z k6-exit rc=0

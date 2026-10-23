@@ -565,18 +565,29 @@ def compare(results):
     w = 0.8 / len(labels)
     for i, (l, color) in enumerate(zip(labels, COLORS + ["#e87ba4", "#6250d6"])):
         df = results[l][0]
-        g = df.groupby("cell").non200.agg(["mean", "min", "max"]).reindex(cells)
+        g = df.groupby("cell").non200.agg(["mean", "min", "max"])
+        # A version without kill1/crash1 runs had one replica: there, kill1 is kill.
+        for c in cells:
+            base = c.replace("kill1-", "kill-").replace("crash1-", "crash-")
+            if c not in g.index and base != c and base in g.index:
+                g.loc[c] = g.loc[base]
+        g = g.reindex(cells)
         xs = [j + (i - (len(labels) - 1) / 2) * w for j in range(len(cells))]
         ax.bar(xs, g["mean"].fillna(0), width=w * 0.92, color=color, label=l)
         ax.errorbar(xs, g["mean"].fillna(0), yerr=[(g["mean"] - g["min"]).fillna(0), (g["max"] - g["mean"]).fillna(0)],
                     fmt="none", ecolor=INK, elinewidth=0.8, capsize=2)
+        for x, v in zip(xs, g["mean"]):
+            if v == 0:
+                ax.annotate("0", (x, 0), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=MUTED)
     ax.set_xticks(range(len(cells)), [c.replace("-service", "").replace("-management", "") for c in cells],
                   rotation=15)
     ax.set_ylabel("non-200 responses per run")
     ax.set_yscale("symlog", linthresh=10)
     ax.grid(axis="x", visible=False)
-    ax.legend(fontsize=8)
-    ax.set_title("Failed requests per run (mean, min–max)", loc="left", color=INK)
+    ax.legend(fontsize=8, ncol=len(labels), loc="upper right", bbox_to_anchor=(1, 1.0))
+    ax.set_ylim(top=ax.get_ylim()[1] * 6)
+    ax.set_title("Failed requests per run (mean, min–max); kill1/crash1 of a single-replica version = kill/crash",
+                 loc="left", color=INK, fontsize=9)
     fig.tight_layout()
     fig.savefig(out / "errors.png")
     plt.close(fig)

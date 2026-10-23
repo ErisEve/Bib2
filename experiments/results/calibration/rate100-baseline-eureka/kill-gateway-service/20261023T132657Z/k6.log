@@ -1,0 +1,61 @@
+time="2026-10-23T13:27:59Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T13:28:00Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T13:28:01Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=4.91s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=4.81s
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=4.92s
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=4.92s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=76.19%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=80.00%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 79.97% 8933 out of 11170
+      { scenario:logins }............: 76.19% 80 out of 105
+      { scenario:reads }.............: 80.00% 8853 out of 11065
+
+    HTTP
+    http_req_duration................: avg=431.16ms p(50)=43.86ms p(95)=2.25s p(99)=3.21s max=10s   count=11171
+      { expected_response:true }.....: avg=535.02ms p(50)=73.12ms p(95)=2.4s  p(99)=3.33s max=9.41s count=8934 
+      { name:/api/books/booksAll }...: avg=497.88ms p(50)=55.44ms p(95)=2.42s p(99)=3.39s max=4.91s count=3689 
+      { name:/api/lendings }.........: avg=362.47ms p(50)=32.57ms p(95)=2.06s p(99)=2.87s max=4.81s count=3688 
+      { name:/api/seats }............: avg=374.82ms p(50)=40.21ms p(95)=2.02s p(99)=2.91s max=4.92s count=3688 
+      { scenario:logins }............: avg=2.47s    p(50)=1.04s   p(95)=7.99s p(99)=10s   max=10s   count=105  
+      { scenario:reads }.............: avg=411.73ms p(50)=43.47ms p(95)=2.19s p(99)=3.05s max=4.92s count=11065
+    http_req_failed..................: 20.02% 2237 out of 11171
+    http_reqs........................: 11171  99.5613/s
+
+    EXECUTION
+    dropped_iterations...............: 127    1.131885/s
+    iteration_duration...............: avg=431.31ms p(50)=44.02ms p(95)=2.25s p(99)=3.21s max=10s   count=11170
+    iterations.......................: 11170  99.552387/s
+    vus..............................: 1      min=0             max=210
+    vus_max..........................: 229    min=102           max=229
+
+    NETWORK
+    data_received....................: 47 MB  421 kB/s
+    data_sent........................: 3.2 MB 29 kB/s
+
+
+
+time="2026-10-23T13:29:20Z" level=error msg="test run was aborted because k6 received a 'terminated' signal"

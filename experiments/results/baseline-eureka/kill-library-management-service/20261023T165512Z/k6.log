@@ -1,0 +1,62 @@
+time="2026-10-23T16:57:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T16:57:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T16:57:34Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T16:57:44Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T16:57:44Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T16:57:44Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=846.39ms
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=868.51ms
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=1.04s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=10s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=100.00%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=93.79%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 93.99%  10491 out of 11161
+      { scenario:logins }............: 100.00% 361 out of 361
+      { scenario:reads }.............: 93.79%  10130 out of 10800
+
+    HTTP
+    http_req_duration................: avg=42.98ms  p(50)=22.44ms p(95)=71.27ms  p(99)=363.14ms max=10s      count=11162
+      { expected_response:true }.....: avg=38.1ms   p(50)=22.82ms p(95)=74.37ms  p(99)=360.38ms max=1.04s    count=10492
+      { name:/api/books/booksAll }...: avg=46.78ms  p(50)=23.14ms p(95)=49.26ms  p(99)=120.13ms max=10s      count=3600 
+      { name:/api/lendings }.........: avg=28.2ms   p(50)=23.76ms p(95)=50.65ms  p(99)=83.13ms  max=846.39ms count=3600 
+      { name:/api/seats }............: avg=23.01ms  p(50)=18.73ms p(95)=36.22ms  p(99)=84.55ms  max=868.51ms count=3600 
+      { scenario:logins }............: avg=350.82ms p(50)=322.4ms p(95)=491.78ms p(99)=689.7ms  max=1.04s    count=361  
+      { scenario:reads }.............: avg=32.66ms  p(50)=22.21ms p(95)=45.74ms  p(99)=92.31ms  max=10s      count=10800
+    http_req_failed..................: 6.00%   670 out of 11162
+    http_reqs........................: 11162   30.949935/s
+
+    EXECUTION
+    iteration_duration...............: avg=43.09ms  p(50)=22.57ms p(95)=71.42ms  p(99)=363.33ms max=10s      count=11161
+    iterations.......................: 11161   30.947162/s
+    vus..............................: 0       min=0              max=12
+    vus_max..........................: 32      min=32             max=32
+
+    NETWORK
+    data_received....................: 52 MB   144 kB/s
+    data_sent........................: 3.2 MB  8.8 kB/s
+
+
+

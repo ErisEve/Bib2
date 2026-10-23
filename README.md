@@ -238,6 +238,16 @@ docker save ghcr.io/eriseve/biblioteka/user-service:main | ssh <agent> sudo k3s 
 
 Then deploy and seed the database exactly as in steps 5–7 above. `kubectl -n biblioteka get pods -o wide` should show every pod on one of the two agents.
 
+### Availability settings
+
+These settings were chosen from measurements under load ([experiments/REPORT.md](experiments/REPORT.md); how to rerun them: [experiments/README.md](experiments/README.md)):
+
+- **Replicas.** `gateway-service` and `user-service` run two replicas each. Every API request crosses the gateway twice and user-service once (each service's `JwtFilter` looks the user up through the gateway), so either one being down takes the whole API down. Both use `maxSurge: 1, maxUnavailable: 0`, so a rollout starts the new pod before it stops an old one, and both have a PodDisruptionBudget (`minAvailable: 1`), so a drain evicts one replica at a time. The other services keep one replica and no PDB, because a PDB on a single replica would block every drain.
+- **Placement.** A topology spread constraint (`matchLabelKeys: [app, pod-template-hash]`, `ScheduleAnyway`) puts the two replicas of a service on different agents, also right after a rolling update. Postgres is a single pod on a node-local volume: draining the agent that runs `postgres-0` takes the database down until that node is back.
+- **Shutdown.** On deletion, every app pod first sleeps 10 s in `preStop`, while kube-proxy and Traefik stop sending it new connections. Spring then shuts down gracefully (`server.shutdown: graceful`) and lets in-flight requests finish for up to 20 s. `terminationGracePeriodSeconds: 45` covers both.
+- **Probes.** All probes have `timeoutSeconds: 3`. At the default 1 s, liveness probes failed under heavy load and restarted healthy pods. The data services' readiness includes the database, so a pod that cannot reach PostgreSQL leaves the Service. Liveness stays local, so a database outage doesn't restart every pod. Startup probes allow 200 s; pods became ready in 16–36 s in the experiments.
+- **Memory.** Requests are about the measured p95 working set under load (gateway 192Mi, ui 160Mi, the data services 256Mi). Limits stay at 640Mi, about twice the highest peak measured.
+
 ## Application features
 ### Existing services
 This application consists of 5 separate services:

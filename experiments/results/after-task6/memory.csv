@@ -1,0 +1,8 @@
+app,idle_median_mi,idle_p95_mi,idle_max_mi,load_median_mi,load_p95_mi,load_max_mi,any_run_max_mi,load_cpu_median_m
+gateway-service,150.0,154.0,154,181.0,186.0,192,226,138.0
+library-management-service,214.0,216.0,216,251.0,257.0,266,291,117.0
+loan-management-service,214.5,215.0,215,251.0,258.0,265,294,116.0
+postgres,92.0,93.0,93,100.0,101.0,102,166,55.0
+seat-management-service,211.0,212.0,212,245.0,252.0,256,282,99.0
+ui-service,140.0,143.0,143,144.0,147.0,153,153,4.0
+user-service,209.0,212.0,213,249.0,258.0,268,326,374.0

@@ -1,0 +1,59 @@
+time="2026-10-23T18:31:14Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T18:31:15Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=2.64s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=2.71s
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=2.8s
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=2.8s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=99.66%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 99.98%  18570 out of 18572
+      { scenario:logins }............: 99.66%  592 out of 594
+      { scenario:reads }.............: 100.00% 17978 out of 17978
+
+    HTTP
+    http_req_duration................: avg=88.69ms  p(50)=17.32ms  p(95)=358.58ms p(99)=1.41s max=10s   count=18573
+      { expected_response:true }.....: avg=87.63ms  p(50)=17.32ms  p(95)=358.3ms  p(99)=1.4s  max=9.8s  count=18571
+      { name:/api/books/booksAll }...: avg=70.93ms  p(50)=16.64ms  p(95)=343.14ms p(99)=1.32s max=2.64s count=5993 
+      { name:/api/lendings }.........: avg=69.75ms  p(50)=18.67ms  p(95)=315.76ms p(99)=1.33s max=2.71s count=5993 
+      { name:/api/seats }............: avg=63.6ms   p(50)=14.93ms  p(95)=287.74ms p(99)=1.25s max=2.8s  count=5992 
+      { scenario:logins }............: avg=711.82ms p(50)=322.83ms p(95)=2.67s    p(99)=8.91s max=10s   count=594  
+      { scenario:reads }.............: avg=68.09ms  p(50)=17.15ms  p(95)=320.32ms p(99)=1.31s max=2.8s  count=17978
+    http_req_failed..................: 0.01%   2 out of 18573
+    http_reqs........................: 18573   30.921999/s
+
+    EXECUTION
+    dropped_iterations...............: 29      0.048282/s
+    iteration_duration...............: avg=88.82ms  p(50)=17.46ms  p(95)=358.73ms p(99)=1.41s max=10s   count=18572
+    iterations.......................: 18572   30.920334/s
+    vus..............................: 0       min=0              max=50
+    vus_max..........................: 61      min=32             max=61
+
+    NETWORK
+    data_received....................: 95 MB   159 kB/s
+    data_sent........................: 5.3 MB  8.8 kB/s
+
+
+

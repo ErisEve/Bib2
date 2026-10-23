@@ -1,0 +1,9 @@
+2026-10-23T17:15:03.609Z sampler-start
+2026-10-23T17:15:33.617Z k6-launch rate=30 duration=6m
+2026-10-23T17:17:03.627Z start drain 
+2026-10-23T17:17:03.973Z drain-begin kube03 (postgres-0 on kube02)
+2026-10-23T17:17:09.177Z drain-done kube03 rc=0 5.2s
+2026-10-23T17:18:09.348Z uncordon kube03
+2026-10-23T17:18:10.673Z all-ready 66.7s
+2026-10-23T17:18:10.676Z end rc=0
+2026-10-23T17:21:34.505Z k6-exit rc=0

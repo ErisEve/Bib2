@@ -1,0 +1,62 @@
+time="2026-10-23T23:23:43Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T23:23:45Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T23:23:46Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T23:23:47Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+time="2026-10-23T23:23:49Z" level=warning msg="Request Failed" error="Post \"http://10.100.50.11:8080/api/auth/login\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=6.1s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=6.06s
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=6.22s
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=6.22s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=99.15%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=100.00%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 99.97%  18487 out of 18492
+      { scenario:logins }............: 99.15%  588 out of 593
+      { scenario:reads }.............: 100.00% 17899 out of 17899
+
+    HTTP
+    http_req_duration................: avg=285.03ms p(50)=20.35ms  p(95)=1.9s  p(99)=4.27s max=10s   count=18493
+      { expected_response:true }.....: avg=282.4ms  p(50)=20.35ms  p(95)=1.89s p(99)=4.25s max=9.93s count=18488
+      { name:/api/books/booksAll }...: avg=256.96ms p(50)=20.3ms   p(95)=1.78s p(99)=3.94s max=6.1s  count=5967 
+      { name:/api/lendings }.........: avg=258.43ms p(50)=21.41ms  p(95)=1.84s p(99)=3.78s max=6.06s count=5966 
+      { name:/api/seats }............: avg=234.44ms p(50)=17.48ms  p(95)=1.64s p(99)=3.73s max=6.22s count=5966 
+      { scenario:logins }............: avg=1.34s    p(50)=343.24ms p(95)=7.92s p(99)=9.88s max=10s   count=593  
+      { scenario:reads }.............: avg=249.94ms p(50)=20.1ms   p(95)=1.75s p(99)=3.82s max=6.22s count=17899
+    http_req_failed..................: 0.02%   5 out of 18493
+    http_reqs........................: 18493   30.787679/s
+
+    EXECUTION
+    dropped_iterations...............: 110     0.183131/s
+    iteration_duration...............: avg=285.17ms p(50)=20.49ms  p(95)=1.9s  p(99)=4.27s max=10s   count=18492
+    iterations.......................: 18492   30.786014/s
+    vus..............................: 1       min=1              max=131
+    vus_max..........................: 142     min=32             max=142
+
+    NETWORK
+    data_received....................: 95 MB   158 kB/s
+    data_sent........................: 5.2 MB  8.7 kB/s
+
+
+

@@ -1,0 +1,9 @@
+app,idle_median_mi,idle_p95_mi,idle_max_mi,load_median_mi,load_p95_mi,load_max_mi,any_run_max_mi,load_cpu_median_m
+eureka-server,184.0,184.0,184,186.0,187.6,188,188,11.0
+gateway-service,184.0,184.0,184,274.0,284.6,285,285,216.0
+library-management-service,245.0,245.0,245,352.0,354.0,354,354,203.0
+loan-management-service,244.0,244.0,244,336.0,341.6,342,342,303.0
+postgres,92.0,93.0,93,106.0,106.0,106,106,83.0
+seat-management-service,242.0,242.0,242,334.0,335.6,336,336,198.0
+ui-service,168.0,168.0,168,170.0,171.0,171,171,8.0
+user-service,243.0,244.5,245,389.0,390.6,391,391,479.0

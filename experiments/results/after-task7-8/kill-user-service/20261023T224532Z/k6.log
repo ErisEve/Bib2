@@ -1,0 +1,58 @@
+time="2026-10-23T22:47:53Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=4.6s
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=1.73s
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=2.58s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=10s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=94.18%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=94.07%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 94.08% 10474 out of 11133
+      { scenario:logins }............: 94.18% 340 out of 361
+      { scenario:reads }.............: 94.07% 10134 out of 10772
+
+    HTTP
+    http_req_duration................: avg=77.66ms p(50)=22.92ms  p(95)=321.52ms p(99)=1.13s    max=10s   count=11134
+      { expected_response:true }.....: avg=71.97ms p(50)=22.76ms  p(95)=309.83ms p(99)=1.22s    max=4.6s  count=10475
+      { name:/api/books/booksAll }...: avg=70.32ms p(50)=23.3ms   p(95)=208.27ms p(99)=1.45s    max=10s   count=3591 
+      { name:/api/lendings }.........: avg=83.51ms p(50)=23.74ms  p(95)=228.72ms p(99)=1.9s     max=4.6s  count=3591 
+      { name:/api/seats }............: avg=50.37ms p(50)=20.46ms  p(95)=175.53ms p(99)=711.99ms max=1.73s count=3590 
+      { scenario:logins }............: avg=361.1ms p(50)=319.71ms p(95)=672.55ms p(99)=1.27s    max=2.58s count=361  
+      { scenario:reads }.............: avg=68.07ms p(50)=22.67ms  p(95)=194.66ms p(99)=1.12s    max=10s   count=10772
+    http_req_failed..................: 5.91%  659 out of 11134
+    http_reqs........................: 11134  30.806831/s
+
+    EXECUTION
+    dropped_iterations...............: 29     0.080241/s
+    iteration_duration...............: avg=77.72ms p(50)=23.06ms  p(95)=321.59ms p(99)=1.13s    max=10s   count=11133
+    iterations.......................: 11133  30.804064/s
+    vus..............................: 1      min=0              max=57
+    vus_max..........................: 61     min=32             max=61
+
+    NETWORK
+    data_received....................: 54 MB  149 kB/s
+    data_sent........................: 3.2 MB 8.7 kB/s
+
+
+

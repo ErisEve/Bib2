@@ -1,0 +1,150 @@
+time="2026-10-23T12:51:26Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:26Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:26Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:26Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:26Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:26Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:38Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:38Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:38Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:38Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:38Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:38Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": dial tcp 10.100.50.11:8080: connect: connection refused"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/lendings\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:46Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:47Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:49Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:49Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:49Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:49Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:50Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:52Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:53Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:53Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:53Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:53Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:53Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/seats\": request timeout"
+time="2026-10-23T12:51:54Z" level=warning msg="Request Failed" error="Get \"http://10.100.50.11:8080/api/books/booksAll\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:/api/books/booksAll}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{name:/api/lendings}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{name:/api/seats}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{scenario:logins}
+    ✓ 'max>=0' max=10s
+
+    http_req_duration{scenario:reads}
+    ✓ 'max>=0' max=10s
+
+    success{scenario:logins}
+    ✓ 'rate>=0' rate=99.11%
+
+    success{scenario:reads}
+    ✓ 'rate>=0' rate=99.73%
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    success..........................: 99.72% 34139 out of 34232
+      { scenario:logins }............: 99.11% 112 out of 113
+      { scenario:reads }.............: 99.73% 34027 out of 34119
+
+    HTTP
+    http_req_duration................: avg=3.62s p(50)=3.29s p(95)=7.23s p(99)=8.94s max=10s   count=34233
+      { expected_response:true }.....: avg=3.61s p(50)=3.29s p(95)=7.17s p(99)=8.78s max=9.99s count=34140
+      { name:/api/books/booksAll }...: avg=3.91s p(50)=3.52s p(95)=7.84s p(99)=9.63s max=10s   count=11373
+      { name:/api/lendings }.........: avg=3.44s p(50)=3.17s p(95)=6.7s  p(99)=8.1s  max=10s   count=11373
+      { name:/api/seats }............: avg=3.52s p(50)=3.21s p(95)=6.91s p(99)=8.45s max=10s   count=11373
+      { scenario:logins }............: avg=3.71s p(50)=3.21s p(95)=7.87s p(99)=9.6s  max=10s   count=113  
+      { scenario:reads }.............: avg=3.62s p(50)=3.29s p(95)=7.22s p(99)=8.94s max=10s   count=34119
+    http_req_failed..................: 0.27%  93 out of 34233
+    http_reqs........................: 34233  272.422575/s
+
+    EXECUTION
+    dropped_iterations...............: 1889   15.032461/s
+    iteration_duration...............: avg=3.62s p(50)=3.29s p(95)=7.23s p(99)=8.94s max=10s   count=34232
+    iterations.......................: 34232  272.414617/s
+    vus..............................: 478    min=86             max=2087
+    vus_max..........................: 2167   min=302            max=2167
+
+    NETWORK
+    data_received....................: 180 MB 1.4 MB/s
+    data_sent........................: 9.8 MB 78 kB/s
+
+
+
