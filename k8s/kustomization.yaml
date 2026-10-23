@@ -71,8 +71,15 @@ labels:
 # and the ReplicaSet immediately replaces it - forever, with no backoff. That
 # is what produced ~11k dead pods.
 #
-# This spreads the stack evenly across the agents instead of stacking it on
-# whichever one the scheduler scores first. The agents only have ~4 GiB each.
+# Two spread constraints, added to every workload:
+# 1. the whole stack evenly across the agents, instead of stacking it on
+#    whichever one the scheduler scores first;
+# 2. each service's own replicas across the agents: matchLabelKeys narrows the
+#    selector to pods with the same `app` value, so the two replicas of a
+#    service don't end up on one node (where a single drain takes both).
+# Both are ScheduleAnyway: with DoNotSchedule, pods evicted by a drain would
+# stay Pending instead of moving to the remaining agent. nodeTaintsPolicy keeps
+# the tainted server out of the count.
 patches:
   - patch: |
       - op: add
@@ -81,11 +88,22 @@ patches:
           - maxSkew: 1
             topologyKey: kubernetes.io/hostname
             whenUnsatisfiable: ScheduleAnyway
+            nodeTaintsPolicy: Honor
             # Every workload pod in the namespace carries an `app` label.
             labelSelector:
               matchExpressions:
                 - key: app
                   operator: Exists
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            nodeTaintsPolicy: Honor
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: Exists
+            matchLabelKeys:
+              - app
     target:
       group: apps
       kind: (Deployment|StatefulSet)

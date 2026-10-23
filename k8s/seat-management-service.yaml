@@ -108,6 +108,7 @@ spec:
             failureThreshold: 3
           resources:
             requests:
+              # About the p95 working set under load (experiments/REPORT.md).
               memory: 256Mi
               cpu: 100m
             limits:

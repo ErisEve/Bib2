@@ -20,7 +20,16 @@ metadata:
   labels:
     app: user-service
 spec:
-  replicas: 1
+  # Two replicas: every API request passes through the gateway twice and
+  # user-service once (JwtFilter looks the user up), so either one being down
+  # takes the whole API down. See experiments/REPORT.md for the memory budget.
+  replicas: 2
+  # Start the replacement before stopping an old pod, so one stays serving.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: user-service
@@ -107,8 +116,24 @@ spec:
             failureThreshold: 3
           resources:
             requests:
+              # About the p95 working set under load (experiments/REPORT.md).
               memory: 256Mi
               cpu: 100m
             limits:
               memory: 640Mi
               cpu: 1000m
+---
+# Voluntary disruptions (kubectl drain) evict one replica at a time and wait
+# until it is replaced. Only on replicated services: with one replica, the
+# budget would block every drain.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: user-service
