@@ -74,7 +74,10 @@ labels:
 # One spread constraint per workload: each service's pods evenly across the
 # agents, so the two replicas of a replicated service don't end up on one node
 # (where a single drain takes both). The selector is empty and matchLabelKeys
-# narrows it to pods with the same `app` value as the pod being scheduled.
+# narrows it to pods with the same `app` value as the pod being scheduled -
+# and the same pod-template-hash, i.e. the same ReplicaSet. Without that, the
+# old pods of a rolling update still count while the new ones are placed, and
+# both new replicas often landed on one agent (half of the measured runs).
 #
 # - ScheduleAnyway, not DoNotSchedule: pods evicted by a drain must be able to
 #   move to the remaining agent instead of staying Pending.
@@ -98,6 +101,7 @@ patches:
             labelSelector: {}
             matchLabelKeys:
               - app
+              - pod-template-hash
     target:
       group: apps
       kind: (Deployment|StatefulSet)
