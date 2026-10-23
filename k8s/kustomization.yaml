@@ -71,15 +71,21 @@ labels:
 # and the ReplicaSet immediately replaces it - forever, with no backoff. That
 # is what produced ~11k dead pods.
 #
-# Two spread constraints, added to every workload:
-# 1. the whole stack evenly across the agents, instead of stacking it on
-#    whichever one the scheduler scores first;
-# 2. each service's own replicas across the agents: matchLabelKeys narrows the
-#    selector to pods with the same `app` value, so the two replicas of a
-#    service don't end up on one node (where a single drain takes both).
-# Both are ScheduleAnyway: with DoNotSchedule, pods evicted by a drain would
-# stay Pending instead of moving to the remaining agent. nodeTaintsPolicy keeps
-# the tainted server out of the count.
+# One spread constraint per workload: each service's pods evenly across the
+# agents, so the two replicas of a replicated service don't end up on one node
+# (where a single drain takes both). The selector is empty and matchLabelKeys
+# narrows it to pods with the same `app` value as the pod being scheduled.
+#
+# - ScheduleAnyway, not DoNotSchedule: pods evicted by a drain must be able to
+#   move to the remaining agent instead of staying Pending.
+# - nodeTaintsPolicy: Honor keeps the tainted server out of the count.
+# - Only one constraint: the API allows one per (topologyKey,
+#   whenUnsatisfiable) pair, so this replaces the earlier spread of the whole
+#   stack. That one was weak anyway: after a restart of every Deployment, the
+#   old pods still counted and all new pods landed on one agent.
+# - `app` must not also appear in labelSelector: the API server merges
+#   matchLabelKeys into the selector and rejects every pod that has the key in
+#   both. (A Deployment with that template is accepted; only its pods fail.)
 patches:
   - patch: |
       - op: add
@@ -89,19 +95,7 @@ patches:
             topologyKey: kubernetes.io/hostname
             whenUnsatisfiable: ScheduleAnyway
             nodeTaintsPolicy: Honor
-            # Every workload pod in the namespace carries an `app` label.
-            labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: Exists
-          - maxSkew: 1
-            topologyKey: kubernetes.io/hostname
-            whenUnsatisfiable: ScheduleAnyway
-            nodeTaintsPolicy: Honor
-            labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: Exists
+            labelSelector: {}
             matchLabelKeys:
               - app
     target:
