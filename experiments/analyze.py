@@ -18,6 +18,11 @@ time by outcome) - small enough to commit, unlike k6.csv.
 With more than one label it also writes results/comparison.md and
 results/comparison/*.png, in the order the labels were given.
 
+    experiments/analyze.py --lang sr [label ...]
+
+does the same, but labels the plots in Serbian Cyrillic and writes them as
+*.sr.png next to the English ones (for REPORT.srb.md).
+
 Definitions (times in seconds relative to the `start` event of events.log):
     a request belongs to the second it was SENT in (k6 timestamps a sample
       when it completes, so send = timestamp - duration);
@@ -64,6 +69,51 @@ CLASS_NAMES = {"503": "503 fallback", "0": "timeout / conn. error", "other": "ot
 # Reference palette, categorical slots 1-3 (validated for all pairs).
 COLORS = ["#2a78d6", "#eb6834", "#1baf7a"]
 INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e4e3df"
+
+# Plot text for --lang sr. Cell, service and pod names stay as they are: they are
+# the names used by the scripts and in the report.
+LANG = "en"
+SR = {
+    "baseline-eureka": "почетно стање (Eureka)",
+    "after-task6": "после задатка 6 (Services)",
+    "after-task7-8": "после задатака 7+8",
+    "503 fallback": "503 резервни одговор",
+    "timeout / conn. error": "истек времена / грешка везе",
+    "other non-200": "остали не-200",
+    "start": "почетак",
+    "end": "крај",
+    "deleted": "обрисан",
+    "replacement ready": "замена спремна",
+    "old pod gone": "стари под уклоњен",
+    "drain": "пражњење",
+    "drained": "испражњен",
+    "uncordon": "uncordon",
+    "rollouts done": "ажурирања завршена",
+    "idle, median": "мировање, медијана",
+    "under load, median": "под оптерећењем, медијана",
+    "under load, max": "под оптерећењем, максимум",
+    "container working set (MiB)": "радни скуп контејнера (MiB)",
+    "{label}: container working set, steady runs": "{label}: радни скуп контејнера, мерења steady",
+    "non-200 / s": "не-200 / s",
+    "{label} · {cell} · run {run} ({n} non-200 of {req})":
+        "{label} · {cell} · понављање {run} ({n} не-200 од {req})",
+    "{label} · run {run} ({n} non-200 of {req})": "{label} · понављање {run} ({n} не-200 од {req})",
+    "seconds since start (request send time)": "секунде од почетка (време слања захтева)",
+    "{cell}: non-200 responses per second, representative run":
+        "{cell}: не-200 одговора у секунди, репрезентативно понављање",
+    "non-200 responses per run": "не-200 одговора по понављању",
+    "Failed requests per run (mean, min–max); kill1/crash1 of a single-replica version = kill/crash":
+        "Неуспели захтеви по понављању (просек, мин–макс); kill1/crash1 верзије са једном репликом = kill/crash",
+}
+
+
+def tr(s, **kw):
+    s = SR.get(s, s) if LANG == "sr" else s
+    return s.format(**kw) if kw else s
+
+
+def png(name):
+    return f"{name}.sr.png" if LANG == "sr" else f"{name}.png"
 
 plt.rcParams.update(
     {
@@ -317,13 +367,15 @@ def plot_memory(mem, out, title):
     fig, ax = plt.subplots(figsize=(7, 0.45 * len(mem) + 1.2))
     y = range(len(mem))
     h = 0.36
-    ax.barh([i + h / 2 + 0.02 for i in y], mem.idle_median_mi, height=h, color=COLORS[0], label="idle, median")
-    ax.barh([i - h / 2 - 0.02 for i in y], mem.load_median_mi, height=h, color=COLORS[1], label="under load, median")
-    ax.scatter(mem.load_max_mi, [i - h / 2 - 0.02 for i in y], marker="|", s=120, color=INK, label="under load, max")
+    ax.barh([i + h / 2 + 0.02 for i in y], mem.idle_median_mi, height=h, color=COLORS[0], label=tr("idle, median"))
+    ax.barh([i - h / 2 - 0.02 for i in y], mem.load_median_mi, height=h, color=COLORS[1],
+            label=tr("under load, median"))
+    ax.scatter(mem.load_max_mi, [i - h / 2 - 0.02 for i in y], marker="|", s=120, color=INK,
+               label=tr("under load, max"))
     for i, v in enumerate(mem.load_max_mi):
         ax.annotate(f"{v:.0f}", (v, i - h / 2), xytext=(6, -3), textcoords="offset points", color=MUTED, fontsize=8)
     ax.set_yticks(list(y), mem.index)
-    ax.set_xlabel("container working set (MiB)")
+    ax.set_xlabel(tr("container working set (MiB)"))
     ax.set_title(title, loc="left", color=INK)
     ax.grid(axis="y", visible=False)
     ax.legend(loc="lower right", fontsize=8)
@@ -353,7 +405,7 @@ def plot_timeline(ax, ps, events, t0, title):
     for c, color in zip(CLASSES, COLORS):
         if ps[c].sum() == 0:
             continue
-        ax.bar(x, ps[c], width=1.0, bottom=bottom, color=color, label=CLASS_NAMES[c], linewidth=0)
+        ax.bar(x, ps[c], width=1.0, bottom=bottom, color=color, label=tr(CLASS_NAMES[c]), linewidth=0)
         bottom = ps[c] if bottom is None else bottom + ps[c]
     ymax = max(5, ps.total.max())
     # Markers less than 2 s apart share one line and one label.
@@ -361,9 +413,9 @@ def plot_timeline(ax, ps, events, t0, title):
     for t, n, _ in events:
         if n in MARKERS:
             if groups and t - t0 - groups[-1][0] < 2:
-                groups[-1][1].append(MARKERS[n])
+                groups[-1][1].append(tr(MARKERS[n]))
             else:
-                groups.append((t - t0, [MARKERS[n]]))
+                groups.append((t - t0, [tr(MARKERS[n])]))
     for rel, names in groups:
         ax.axvline(rel, color=MUTED, linewidth=0.8, linestyle=(0, (3, 2)))
         ax.annotate(" / ".join(names), (rel, 1), xycoords=("data", "axes fraction"), rotation=90, va="top",
@@ -371,7 +423,7 @@ def plot_timeline(ax, ps, events, t0, title):
     ax.set_ylim(0, ymax * 1.02)
     ax.set_xlim(x.min(), x.max())
     ax.set_title(title, loc="left", color=INK, fontsize=9)
-    ax.set_ylabel("non-200 / s")
+    ax.set_ylabel(tr("non-200 / s"))
 
 
 def representative(rows):
@@ -475,19 +527,20 @@ def analyze_label(label):
     for cell, cell_rows in by_cell.items():
         row, ps, events = representative(cell_rows)
         fig, ax = plt.subplots(figsize=(9, 2.6))
-        plot_timeline(ax, ps, events, first(events, "start"), f"{label} · {cell} · run {row['run']} "
-                      f"({row['non200']} non-200 of {row['requests']})")
-        ax.set_xlabel("seconds since start (request send time)")
+        plot_timeline(ax, ps, events, first(events, "start"),
+                      tr("{label} · {cell} · run {run} ({n} non-200 of {req})", label=tr(label), cell=cell,
+                         run=row["run"], n=row["non200"], req=row["requests"]))
+        ax.set_xlabel(tr("seconds since start (request send time)"))
         fig.tight_layout(rect=(0, 0.08, 1, 1))
         if any(ps[c].sum() for c in CLASSES):
             fig.legend(*ax.get_legend_handles_labels(), loc="lower center", fontsize=8, ncol=3)
-        fig.savefig(plots / f"timeline-{cell}.png")
+        fig.savefig(plots / png(f"timeline-{cell}"))
         plt.close(fig)
 
     mem, nodes = memory_tables(label_dir, runs_events)
     if mem is not None:
         mem.to_csv(label_dir / "memory.csv")
-        plot_memory(mem, plots / "memory.png", f"{label}: container working set, steady runs")
+        plot_memory(mem, plots / png("memory"), tr("{label}: container working set, steady runs", label=tr(label)))
     if nodes is not None:
         nodes.round(1).to_csv(label_dir / "nodes.csv")
 
@@ -544,20 +597,22 @@ def compare(results):
                                  squeeze=False)
         for ax, l in zip(axes[:, 0], present):
             row, ps, events = representative(results[l][1][cell])
-            plot_timeline(ax, ps, events, first(events, "start"), f"{l} · run {row['run']} "
-                          f"({row['non200']} non-200 of {row['requests']})")
+            plot_timeline(ax, ps, events, first(events, "start"),
+                          tr("{label} · run {run} ({n} non-200 of {req})", label=tr(l), run=row["run"],
+                             n=row["non200"], req=row["requests"]))
         handles, names = [], []
         for ax in axes[:, 0]:
             for h, n in zip(*ax.get_legend_handles_labels()):
                 if n not in names:
                     handles.append(h)
                     names.append(n)
-        axes[-1, 0].set_xlabel("seconds since start (request send time)")
-        fig.suptitle(f"{cell}: non-200 responses per second, representative run", x=0.01, ha="left", color=INK)
+        axes[-1, 0].set_xlabel(tr("seconds since start (request send time)"))
+        fig.suptitle(tr("{cell}: non-200 responses per second, representative run", cell=cell), x=0.01, ha="left",
+                     color=INK)
         fig.tight_layout(rect=(0, 0.06, 1, 1))
         if handles:
             fig.legend(handles, names, loc="lower center", fontsize=8, ncol=3)
-        fig.savefig(out / f"timeline-{cell}.png")
+        fig.savefig(out / png(f"timeline-{cell}"))
         plt.close(fig)
 
     # Errors per cell and label, mean with min-max whiskers.
@@ -573,7 +628,7 @@ def compare(results):
                 g.loc[c] = g.loc[base]
         g = g.reindex(cells)
         xs = [j + (i - (len(labels) - 1) / 2) * w for j in range(len(cells))]
-        ax.bar(xs, g["mean"].fillna(0), width=w * 0.92, color=color, label=l)
+        ax.bar(xs, g["mean"].fillna(0), width=w * 0.92, color=color, label=tr(l))
         ax.errorbar(xs, g["mean"].fillna(0), yerr=[(g["mean"] - g["min"]).fillna(0), (g["max"] - g["mean"]).fillna(0)],
                     fmt="none", ecolor=INK, elinewidth=0.8, capsize=2)
         for x, v in zip(xs, g["mean"]):
@@ -581,15 +636,15 @@ def compare(results):
                 ax.annotate("0", (x, 0), xytext=(0, 2), textcoords="offset points", ha="center", fontsize=7, color=MUTED)
     ax.set_xticks(range(len(cells)), [c.replace("-service", "").replace("-management", "") for c in cells],
                   rotation=15)
-    ax.set_ylabel("non-200 responses per run")
+    ax.set_ylabel(tr("non-200 responses per run"))
     ax.set_yscale("symlog", linthresh=10)
     ax.grid(axis="x", visible=False)
     ax.legend(fontsize=8, ncol=len(labels), loc="upper right", bbox_to_anchor=(1, 1.0))
     ax.set_ylim(top=ax.get_ylim()[1] * 6)
-    ax.set_title("Failed requests per run (mean, min–max); kill1/crash1 of a single-replica version = kill/crash",
+    ax.set_title(tr("Failed requests per run (mean, min–max); kill1/crash1 of a single-replica version = kill/crash"),
                  loc="left", color=INK, fontsize=9)
     fig.tight_layout()
-    fig.savefig(out / "errors.png")
+    fig.savefig(out / png("errors"))
     plt.close(fig)
 
     mems = {l: results[l][2] for l in labels if results[l][2] is not None and "load_max_mi" in results[l][2]}
@@ -605,7 +660,11 @@ def compare(results):
 
 
 def main():
-    labels = sys.argv[1:] or sorted(p.name for p in RESULTS.iterdir() if p.is_dir() and p.name != "comparison")
+    global LANG
+    args = sys.argv[1:]
+    if args[:1] == ["--lang"]:
+        LANG, args = args[1], args[2:]
+    labels = args or sorted(p.name for p in RESULTS.iterdir() if p.is_dir() and p.name != "comparison")
     results = {}
     for label in labels:
         r = analyze_label(label)
